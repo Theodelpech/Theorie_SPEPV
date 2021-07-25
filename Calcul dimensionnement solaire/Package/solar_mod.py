@@ -57,9 +57,9 @@ def angle_reflechi(beta):
     y = 90.0 - 0.5788*beta + 0.002693*beta**2
     return y
 def angle_horaire(sol_t):
-    # sol_t temps solaire en heures minutes de 0 à 24 hr
+    # sol_t temps solaire en heures minutes de 0 ï¿½ 24 hr
     # terre tourne 15 deg par heure
-    # ome = 0 à midi solaire (>0 PM, <0 AM)
+    # ome = 0 ï¿½ midi solaire (>0 PM, <0 AM)
     x = sol_t.hr + sol_t.min/60.0
     ome = 15.0*(x-12.0)
     return ome
@@ -75,7 +75,7 @@ def azimuth_solaire(thes,delta,phi,ome):
     #        thes : zenith solaire
     #        del : declinaison en degre
     #        ome : angle horaire en degre
-    #       phi : latitude en degrées
+    #       phi : latitude en degrï¿½es
 
     cosz = (cosd(thes)*sind(phi)-sind(delta))/(sind(thes)*cosd(phi))
     cosz = min(1,cosz);
@@ -100,7 +100,7 @@ def Calcul_Ka(It,Itb,Itd,Itr,theb,bo,beta,b1 = 0):
     return Ka
 
 def decl_solaire(n,cas =1):
-    # declinaison solaire en degrés (Eq 1.6.1a de DB 3rd edition)
+    # declinaison solaire en degrï¿½s (Eq 1.6.1a de DB 3rd edition)
     # Pour utiliser 1.6.1b, cas =2
     dec = 23.45*sind(360.0*(284.0+n)/365.0);
     if cas == 2:
@@ -118,7 +118,7 @@ def normale_solaire(delt,phi,ome,beta,gam):
     #        gam : azimuth capteur
     #        delt : declinaison en degre
     #        ome : angle horaire en degre
-    #        phi : latitude en degrées
+    #        phi : latitude en degrï¿½es
 
     cosz = sind(delt)*sind(phi)*cosd(beta)-sind(delt)*cosd(phi)*sind(beta)*cosd(gam) \
            + cosd(delt)*cosd(phi)*cosd(beta)*cosd(ome) + cosd(delt)*sind(phi)*sind(beta)*cosd(ome)*cosd(gam) \
@@ -134,7 +134,7 @@ def normale_solaire2(thez,gams,beta,gam):
     #        gam : azimuth capteur
     #        delt : declinaison en degre
     #        ome : angle horaire en degre
-    #        phi : latitude en degrées
+    #        phi : latitude en degrï¿½es
 
     cosz = cosd(thez)*cosd(beta)+sind(thez)*sind(beta)*cosd(gams-gam)
     cosz = min(1,cosz)
@@ -142,7 +142,7 @@ def normale_solaire2(thez,gams,beta,gam):
     the = arccos(cosz)*180.0/pi
     return the
 def  zenith_solaire(phi,delt,ome):
-    # (1.6.5) de D.B 3rd édition
+    # (1.6.5) de D.B 3rd ï¿½dition
     # angle de zenith du soleil en degres
     #       phi : latitude en degre nord positif, sud negatif
     #        del : declinaison en degre
@@ -176,10 +176,10 @@ def equation_temps(n):
 
 def heure_solaire(lon,Lst,del_h=0,st=0):
     # st : temps legal
-    #   st_jour : jour de l'année
+    #   st_jour : jour de l'annï¿½e
     #   st_hr : heure , st_min : minute
     #   lon : longitude (lon.deg, lon.min )
-    #   Lst : longitude du méridien de l'heure (-180 à 180, ex: -75 eastern time)
+    #   Lst : longitude du mï¿½ridien de l'heure (-180 ï¿½ 180, ex: -75 eastern time)
     #   del_h : difference entre l'heure legale et l'heure strandard
     #               Amerique    0 hiver , 1 ete
     #               Europe       1 hiver , 2 ete
@@ -218,10 +218,10 @@ def heure_solaire(lon,Lst,del_h=0,st=0):
     return sol_t
 def heure_legale(lon,Lst,del_h=0,sol_t=0):
     # sol_t : temps solaire
-    #   solt_jour : jour de l'année
+    #   solt_jour : jour de l'annï¿½e
     #   solt_hr : heure , st_min : minute
     #   lon : longitude (lon.deg, lon.min )
-    #   Lst : longitude du méridien de l'heure (-180 à 180, ex: -75 eastern time)
+    #   Lst : longitude du mï¿½ridien de l'heure (-180 ï¿½ 180, ex: -75 eastern time)
     #   del_h : difference entre l'heure legale et l'heure strandard
     #               Amerique    0 hiver , 1 ete
     #               Europe       1 hiver , 2 ete
@@ -342,7 +342,7 @@ def irradiation_extraterrestre_horaire(n,phi,ome1,ome2,cas = 1):
         com = -tand(phi)*tand(delt)
         ome1 = -arccos(com)*180.0/pi
     elif cosd(thez2) < 0:
-        # ome2 est après le coucher du soleil
+        # ome2 est aprï¿½s le coucher du soleil
         # on remplace ome2 par omes
         com = -tand(phi)*tand(delt)
         ome2 = arccos(com)*180.0/pi
@@ -364,8 +364,8 @@ def irradiation_extraterrestre_jour_moyen(nmois,phi):
 def jour_mois_jour_annee(jour,mois):
     #
     # fonction qui transforme une date en jour et mois
-    # en jour de 1 à 365
-    # Les mois doivent s'écrire
+    # en jour de 1 ï¿½ 365
+    # Les mois doivent s'ï¿½crire
     # 'jan';'fev';'mars';'avr';'mai';'juin';'juil';'aout';'sept';'oct
     # ';'nov';'dec'
 
@@ -383,8 +383,8 @@ def jour_mois_jour_annee(jour,mois):
 
 def jour_annee_jour_mois(n):
     #
-    # fonction qui transforme un jour  de 1 à 365
-    # à une date en jour du mois
+    # fonction qui transforme un jour  de 1 ï¿½ 365
+    # ï¿½ une date en jour du mois
     i = cherche_index(n,jjr)
     mois = nom[i]
     jour = n-jjr[i]
@@ -450,9 +450,9 @@ def Collares_diffus(ome,omes):
 
 def  Calcul_pertes(T1c,beta,H,Y,uinf,Tinfc,Tskyc,Lair,e1,e2,Lv = 0,kv = 1,e3=-1):
     def fct2(T2c,T3c=-999):
-    	# système d'équation non-linéraire pour trouver
+    	# systï¿½me d'ï¿½quation non-linï¿½raire pour trouver
     	# la du vitrage
-    	# à partir des bilans thermique
+    	# ï¿½ partir des bilans thermique
         if T3c == -999:
             T3c = T2c
         Dt = T1c-T2c
@@ -474,7 +474,7 @@ def  Calcul_pertes(T1c,beta,H,Y,uinf,Tinfc,Tskyc,Lair,e1,e2,Lv = 0,kv = 1,e3=-1)
         hconvi = Nui*ki/Lair
         # Calcul du coefficient de radiation interne
         hradi = sig*(T1k+T2k)*(T1k**2+T2k**2)/(1.0/e1+1.0/e2-1.0)
-        R1pp = 1.0/(hconvi+hradi)    # résistance équivalente interne
+        R1pp = 1.0/(hconvi+hradi)    # rï¿½sistance ï¿½quivalente interne
         Ripp = R1pp + Lv/kv
         # Calcul du coef de convection externe
         Recr = 500000.0
@@ -496,14 +496,14 @@ def  Calcul_pertes(T1c,beta,H,Y,uinf,Tinfc,Tskyc,Lair,e1,e2,Lv = 0,kv = 1,e3=-1)
         Rcpp = 1/hconve
         Rrpp = 1/hrade
         #
-        # fin du calcul des résistances thermiques
-        # vérification des bilans thermiques avec hypothese
+        # fin du calcul des rï¿½sistances thermiques
+        # vï¿½rification des bilans thermiques avec hypothese
         qppi = (T1c - T2c)/Ripp
         qconvi = hconvi*(T1c-T2c)
         qradi = hradi*(T1c-T2c)
         qppi2 = qconvi+qradi
         #
-        # Bilan radiatif à la surface externe de la vitre
+        # Bilan radiatif ï¿½ la surface externe de la vitre
         #
         C1 = 1/Ripp +  1/Rcpp + 1/Rrpp
         T3n = (T1c/Ripp + Tinfc/Rcpp+Tskyc/Rrpp)/C1
@@ -518,8 +518,8 @@ def  Calcul_pertes(T1c,beta,H,Y,uinf,Tinfc,Tskyc,Lair,e1,e2,Lv = 0,kv = 1,e3=-1)
             return T2n,T3n,Uh
 
 
-    #     fonction calculant les pertes du haut d'un capteur à un vitrage
-    #     caractérictiques du capteur
+    #     fonction calculant les pertes du haut d'un capteur ï¿½ un vitrage
+    #     caractï¿½rictiques du capteur
     Tskyk = Tskyc+273
     T1k = T1c+273
     Tinfk = Tinfc + 273
@@ -530,7 +530,7 @@ def  Calcul_pertes(T1c,beta,H,Y,uinf,Tinfc,Tskyc,Lair,e1,e2,Lv = 0,kv = 1,e3=-1)
     Ac = H*Y
     P = 2.0*(H+Y)
     Lc = 4.0*Ac/P
-    # valeurs initiales pour le calcul itératif
+    # valeurs initiales pour le calcul itï¿½ratif
     T2i = T1c-2.0
     ok = False
     compt = 1
@@ -601,7 +601,7 @@ def  Eval_pertes(T1c,T2c,beta,H,Y,uinf,Tinfc,Tskyc,Lair,e1,e2,Lv = 0,kv = 1,e3=-
     hconvi = Nui*ki/Lair
     # Calcul du coefficient de radiation interne
     hradi = sig*(T1k+T2k)*(T1k**2+T2k**2)/(1.0/e1+1.0/e2-1.0)
-    R1pp = 1.0/(hconvi+hradi)    # résistance équivalente interne
+    R1pp = 1.0/(hconvi+hradi)    # rï¿½sistance ï¿½quivalente interne
     Ripp = R1pp + Lv/kv
     # Calcul du coef de convection externe
     Recr = 500000.0
@@ -623,14 +623,14 @@ def  Eval_pertes(T1c,T2c,beta,H,Y,uinf,Tinfc,Tskyc,Lair,e1,e2,Lv = 0,kv = 1,e3=-
     Rcpp = 1/hconve
     Rrpp = 1/hrade
     #
-    # fin du calcul des résistances thermiques
-    # vérification des bilans thermiques avec hypothese
+    # fin du calcul des rï¿½sistances thermiques
+    # vï¿½rification des bilans thermiques avec hypothese
     qppi = (T1c - T2c)/Ripp
     qconvi = hconvi*(T1c-T2c)
     qradi = hradi*(T1c-T2c)
     qppi2 = qconvi+qradi
     #
-    # Bilan radiatif à la surface externe de la vitre
+    # Bilan radiatif ï¿½ la surface externe de la vitre
     #
     qconve = hconve*(T3c-Tinfc)
     qrade = hrade*(T3c-Tskyc)
@@ -645,9 +645,9 @@ def U_Klein(T_pc,T_ac,Slope,h,Emitt,emig,n):
     # T_pc : Temperatue de la plaque en Celsius
     # T_ac : Temperatue ambiante  en Celsius
     # Slope : angle beta
-    # h : coefficient de convection extérieur
-    # Emitt : emissivité de la plaque
-    # emig: emissivitée du verre
+    # h : coefficient de convection extï¿½rieur
+    # Emitt : emissivitï¿½ de la plaque
+    # emig: emissivitï¿½e du verre
     # n : nombre de vitre
     #
     T_p = T_pc + 273
@@ -667,9 +667,9 @@ def U_Klein(T_pc,T_ac,Slope,h,Emitt,emig,n):
 
 def  Calcul_rendement(Tfi,Itw,Sw,N,ka,deltaa,D,Rpjoint,mp1,Ucote,Ubas,beta,H,Y,uinf,Tinfc,Tskyc,Lair,e1,e2,Lv = 0,kv = 1,e3=-1,flag_turb = 0):
     def fct2(Tpc,Tfo):
-    	# système d'équation non-linéraire pour trouver
+    	# systï¿½me d'ï¿½quation non-linï¿½raire pour trouver
     	# la temperature de la plaque
-    	# à partir des bilans thermique
+    	# ï¿½ partir des bilans thermique
         if Lv == 0:
             T2,Uhaut =  Calcul_pertes(Tpc,beta,H,Y,uinf,Tinfc,Tskyc,Lair,e1,e2,e3= e3)
 
@@ -683,7 +683,7 @@ def  Calcul_rendement(Tfi,Itw,Sw,N,ka,deltaa,D,Rpjoint,mp1,Ucote,Ubas,beta,H,Y,u
         x = m*(W-D)/2
         # Calcul du rendement d'ailette F
         F = tanh(x)/x
-        # Propriétées de l'eau
+        # Propriï¿½tï¿½es de l'eau
         Tf = (Tfi+Tfo)/2.0
         Tfk = Tf+273.0
         mu = eau_prop('muf',Tfk)
@@ -703,7 +703,7 @@ def  Calcul_rendement(Tfi,Itw,Sw,N,ka,deltaa,D,Rpjoint,mp1,Ucote,Ubas,beta,H,Y,u
         # Calcul du rendement d'absorbeur F'
         Fp = 1.0/(UL*den)
         zz = UL*Ac*Fp/(mpt*Cp)
-        # Calcul du facteur de récupération FR
+        # Calcul du facteur de rï¿½cupï¿½ration FR
         Fpp = 1/zz*(1-exp(-zz))
         Fr = Fp*Fpp
         UDT = UL*(Tfi-Tinfc)            # pertes en W/m2
@@ -711,14 +711,14 @@ def  Calcul_rendement(Tfi,Itw,Sw,N,ka,deltaa,D,Rpjoint,mp1,Ucote,Ubas,beta,H,Y,u
         qupp2 =(Sw-UL*(Tpc-Tinfc))
         qu = qupp*Ac
         rend = qupp/Itw
-        # Calcul des nouvelles températures
+        # Calcul des nouvelles tempï¿½ratures
         Tfo = Tfi + qu/(mpt*Cp)
         Tf = Tfi+qupp/(Fr*UL)*(1-Fpp)
         Tf2 = (Tfi+Tfo)/2
         Tpn = Tfi+qupp/(Fr*UL)*(1-Fr)
         return Tpn,Tfo,qupp,rend
 
-    #     fonction calculant le rendement d'un capteur à partir de son modele theorique et la temperature d'entree
+    #     fonction calculant le rendement d'un capteur ï¿½ partir de son modele theorique et la temperature d'entree
     W = H/real(N)
     Ac = H*Y
     mpt = mp1*N
@@ -761,7 +761,7 @@ def calcul_Rb(phi,n,ome,beta,gam,cas = 1):
     Rb = cosd(the)/cosd(thez)
     sol_t = heure_angle(ome)
     if (sol_t.hr == lever.hr):
-        # cas ou l'heure demandée comprend le lever du soleil
+        # cas ou l'heure demandï¿½e comprend le lever du soleil
         ome1 = angle_horaire(lever)
         hr2.hr = sol_t.hr+1
         hr2.min = 0
@@ -774,7 +774,7 @@ def calcul_Rb(phi,n,ome,beta,gam,cas = 1):
             gg = 0
         Rb = a/b
     if (sol_t.hr == coucher.hr):
-    # cas ou l'heure demandée comprend le coucher du soleil
+    # cas ou l'heure demandï¿½e comprend le coucher du soleil
         ome2 = angle_horaire(coucher)
         hr1.hr = sol_t.hr
         hr1.min = 0;
@@ -902,7 +902,7 @@ def modele_perez(I,Ib,Id,beta,Rb,rhog,Io,Ion,thez,the):
 
 
 def  snell(th1,nv,na=1):
-    # calcul de l'angle de réflexion donnée par la loi de snell
+    # calcul de l'angle de rï¿½flexion donnï¿½e par la loi de snell
     # Si on ne donne que 2  arguments, on suppose que  la radiaton incidente est
     # dans l'air ou le vie n = 1
     sth2 = na*sind(th1)/nv
@@ -960,8 +960,8 @@ def  Calcul_tau_al(the1,alpn,KL,n2=1.526,n1=1,N=1):
     # calcul de (tau_alpha)
     # the1 angle incidente
     # alpn, coeficient d,absorbeur faible longueur d'onde
-    # n2 : indice de réfraction de la vitre ( défaut 1.53)
-    # n1 : indice de réfraction de l'air ( défaut 1)
+    # n2 : indice de rï¿½fraction de la vitre ( dï¿½faut 1.53)
+    # n1 : indice de rï¿½fraction de l'air ( dï¿½faut 1)
     the2 = snell(the1,n2,n1)
     rpe,rpa,r = r_coef(the1,the2,n2,n1)
     tau_pe = (1-rpe)/(1+rpe)
@@ -1096,7 +1096,7 @@ def G_pvI(x,I,V = 8.0,T = 25.0 + 273.15):
     except RuntimeError:
         Gm = 0
 
-    return Sm
+    return Gm
 
 def Vocr(x,Voci,G = 1000.0,T = 25.0 + 273.15):
 
@@ -1191,7 +1191,7 @@ def IV_pv_peak(x,G= 1000.0,T = 25.0 + 273.15,Vi = 35):
     return y
 
 def  cherche_index(xi,x):
-    """ cherche l'index où x(i) <= xi < x(i+1)"""
+    """ cherche l'index oï¿½ x(i) <= xi < x(i+1)"""
     err = 0
     ok = 1
     i = 0
