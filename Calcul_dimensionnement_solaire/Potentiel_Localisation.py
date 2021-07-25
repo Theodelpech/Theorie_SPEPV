@@ -52,7 +52,7 @@ class Potentiel_Localisation(object):
                 Idh = Io*tau_d
                 Ith = Idh + Ibh
                 Rb = sm.calcul_Rb(self.Latitude, Jour,ome_moy,self.beta, gam)
-                It = sm.modele_isotropique(Ith,Ibh,Idh,self.beta,Rb,self.Albedo) #en W/m2
+                It,Itb,Itd,Itr = sm.modele_isotropique(Ith,Ibh,Idh,self.beta,Rb,self.Albedo) #en W/m2
                 It_global[kh] = It
                 kh = kh +1
                 Temps_solaire = Temps_solaire +1
