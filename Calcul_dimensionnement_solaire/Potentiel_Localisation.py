@@ -1,3 +1,4 @@
+from Calcul_dimensionnement_solaire.solar_mod import calcul_Rb
 import solar_mod as sm
 import numpy as np
 
@@ -29,6 +30,7 @@ class Potentiel_Localisation(object):
         run = 0.99 #à demander
         rk = 1.02 #à demander
         Alt = 0.052 #en km à demander à l'utilisateur
+        gam = 0
         It_global = []
         for Jour in range(1,365,1):
             for Temps_solaire in range (0,24,1):
@@ -49,8 +51,7 @@ class Potentiel_Localisation(object):
                 tau_d = 0.271 - 0.294*tau_b
                 Idh = Io*tau_d
                 Ith = Idh + Ibh
-                the_moy = np.arccos(sm.cosd(delta)*sm.sind(self.Latitude-self.beta)+sm.cosd(delta)*sm.cosd(ome_moy)*sm.cosd(self.Latitude-self.beta))
-                Rb = np.cos(the_moy)/np.cos(thetaz_moy)
+                Rb = calcul_Rb(self.Latitude, Jour,ome_moy,self.beta, gam)
                 It = sm.modele_isotropique(Ith,Ibh,Idh,self.beta,Rb,self.Albedo) #en W/m2
                 It_global.extend(It)
                 return It_global
