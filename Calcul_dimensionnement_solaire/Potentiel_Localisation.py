@@ -25,29 +25,29 @@ class Potentiel_Localisation(object):
         return 0.
         # End of user code	
     def Potentiel_solaire_theo(self):
-        r_0 = 0.97 #à demander
-        r_1 = 0.99 #à demander
+        ro = 0.97 #à demander
+        run = 0.99 #à demander
         rk = 1.02 #à demander
         Alt = 0.052 #en km à demander à l'utilisateur
         It_global = []
         for Jour in range(1,365,1):
             for Temps_solaire in range (0,24,1):
                 omega_1 = (Temps_solaire-12)*15.000000
-                omega_2 = omega_1+15
+                omega_2 = (omega_1)+15
                 ome_moy = (omega_1+omega_2)/2
                 delta = sm.decl_solaire(Jour)
                 #Gon = self.Gsc*(1+0.033((360*self.Jour)/365)) 
                 thetaz_moy = sm.zenith_solaire(self.Latitude,delta,omega_1)
                 #alphas_moy = 90 - thetaz_moy
                 m_air = 1/np.cos(thetaz_moy)
-                I0 = sm.irradiation_extraterrestre_horaire(Jour, self.Latitude,omega_1,omega_2)
-                a_0 = r_0*(0.4237-0.00821*(6-Alt)^2)
-                a_1 = r_1*(0.5055+0.00595(6.5-Alt)^2)
+                Io = sm.irradiation_extraterrestre_horaire(Jour, self.Latitude,omega_1,omega_2)
+                ao = ro*(0.4237-0.00821*(6-Alt)^2)
+                aun = run*(0.5055+0.00595(6.5-Alt)^2)
                 k = rk*(0.2711-0.01858*(2.5-Alt)^2)
-                tau_b = a_0 + a_1*np.exp(-k*m_air)
-                Ibh = I0*tau_b
+                tau_b = ao + aun*np.exp(-k*m_air)
+                Ibh = Io*tau_b
                 tau_d = 0.271 - 0.294*tau_b
-                Idh = I0*tau_d
+                Idh = Io*tau_d
                 Ith = Idh + Ibh
                 the_moy = sm.arccosd(sm.cosd(delta)*sm.sind(self.Latitude-self.beta)+sm.cosd(delta)*sm.cosd(ome_moy)*sm.cosd(self.Latitude-self.beta))
                 Rb = np.cos(the_moy)/np.cos(thetaz_moy)
