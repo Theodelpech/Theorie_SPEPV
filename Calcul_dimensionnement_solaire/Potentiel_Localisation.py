@@ -49,7 +49,7 @@ class Potentiel_Localisation(object):
                 tau_d = 0.271 - 0.294*tau_b
                 Idh = Io*tau_d
                 Ith = Idh + Ibh
-                the_moy = sm.arccosd(sm.cosd(delta)*sm.sind(self.Latitude-self.beta)+sm.cosd(delta)*sm.cosd(ome_moy)*sm.cosd(self.Latitude-self.beta))
+                the_moy = np.arccos(sm.cosd(delta)*sm.sind(self.Latitude-self.beta)+sm.cosd(delta)*sm.cosd(ome_moy)*sm.cosd(self.Latitude-self.beta))
                 Rb = np.cos(the_moy)/np.cos(thetaz_moy)
                 It = sm.modele_isotropique(Ith,Ibh,Idh,self.beta,Rb,self.Albedo) #en W/m2
                 It_global.extend(It)
