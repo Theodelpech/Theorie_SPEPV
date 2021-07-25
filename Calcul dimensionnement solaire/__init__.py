@@ -1,6 +1,6 @@
-__all__ = ["Potentiel_Localisation", "Graph_potentiel", "Basegraph", "Environnement"]
+__all__ = ["Basegraph", "Graph_potentiel", "Potentiel_Localisation", "Environnement"]
 
-from .Potentiel_Localisation import Potentiel_Localisation
-from .Graph_potentiel import Graph_potentiel
 from .Basegraph import Basegraph
+from .Graph_potentiel import Graph_potentiel
+from .Potentiel_Localisation import Potentiel_Localisation
 from .Environnement import Environnement
