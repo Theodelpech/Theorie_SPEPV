@@ -1,8 +1,7 @@
 import solar_mod as sm
 import numpy as np
 
-Gsc = 1367.0 #W/m2 irradiation extraterrestre qui frappe la Terre
-Temps_solaire = 0 #Première heure solaire d'une journée de 24 heures solaire
+Gsc = 1367.0 #W/m2 irradiation extraterrestre qui frappe la Terre4
 Jour = 1 #Premier jour d'une année de 365 jours, le 1er Janvier
 MAX_LONGITUDE = -180
 MAX_LATITUDE = 180
@@ -32,6 +31,7 @@ class Potentiel_Localisation(object):
         gam = 0
         It_global = []
         for Jour in range(1,365):
+            Temps_solaire = 0
             for Temps_solaire in range (0,24):
                 omega_1 = (Temps_solaire-12)*15.000000
                 omega_2 = (omega_1)+15
