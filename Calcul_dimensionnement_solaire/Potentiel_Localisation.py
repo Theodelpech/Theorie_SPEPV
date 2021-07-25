@@ -50,7 +50,7 @@ class Potentiel_Localisation(object):
                 tau_d = 0.271 - 0.294*tau_b
                 Idh = Io*tau_d
                 Ith = Idh + Ibh
-                Rb = calcul_Rb(self.Latitude, Jour,ome_moy,self.beta, gam)
+                Rb = sm.calcul_Rb(self.Latitude, Jour,ome_moy,self.beta, gam)
                 It = sm.modele_isotropique(Ith,Ibh,Idh,self.beta,Rb,self.Albedo) #en W/m2
                 It_global.extend(It)
                 return It_global
