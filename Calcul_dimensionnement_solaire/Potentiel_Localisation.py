@@ -1,11 +1,12 @@
+import Package
 import solar_mod as sm
 import numpy as np
 class Potentiel_Localisation(object):
     def __init__(self):
-        self.Longitude = 0. #à demander
-        self.Latitude = 0. #à demander
+        self.Longitude = 47.22 #à demander
+        self.Latitude = -1.55 #à demander
         self.Theo_ou_meteo = True #à demander
-        self.beta = 0 #à demander
+        self.beta = 10 #à demander
         self.Albedo = 0.2 #albedo moyen entre une forêt de conifère et un sol sombre (à demander)
         self.Gsc = 1367.0 #W/m2 irradiation extraterrestre qui frappe la Terre
         self.Temps_solaire = 0 #Première heure solaire d'une journée de 24 heures solaire
@@ -23,10 +24,11 @@ class Potentiel_Localisation(object):
         return 0.
         # End of user code	
     def Potentiel_solaire_theo(self):
-        r0 = 1 #à demander
-        r1 = 1 #à demander
-        rk = 1 #à demander
-        Alt = 1 #en km à demander à l'utilisateur
+        r0 = 0.97 #à demander
+        r1 = 0.99 #à demander
+        rk = 1.02 #à demander
+        Alt = 0.052 #en km à demander à l'utilisateur
+        It_global = []
         for self.Jour in range(1,365,1):
             for self.Temps_solaire in range (0,24,1):
                 omega_1 = (self.Temps_solaire-12)*15.000000
@@ -46,15 +48,12 @@ class Potentiel_Localisation(object):
                 tau_d = 0.271 - 0.294*tau_b
                 Idh = I0*tau_d
                 Ith = Idh + Ibh
-                the_moy = sm.arccosd(sm.cosd(delta)*sm.sind(self.Latitude-self.beta)+sm.cosd(delta)*cosd(ome_moy)*sm.cosd(self.Latitude-self.beta))
+                the_moy = sm.arccosd(sm.cosd(delta)*sm.sind(self.Latitude-self.beta)+sm.cosd(delta)*sm.cosd(ome_moy)*sm.cosd(self.Latitude-self.beta))
                 Rb = np.cos(the_moy)/np.cos(thetaz_moy)
                 It = sm.modele_isotropique(Ith,Ibh,Idh,self.beta,Rb,self.Albedo) #en W/m2
-                
-                
-
-
-                return
-            return
+                It_global.extend(It)
+                return It_global
+            return It_global
         # End of user code	
     # Start of user code -> methods for Potentiel_Localisation class
         return 0.

@@ -876,7 +876,7 @@ def modele_perez(I,Ib,Id,beta,Rb,rhog,Io,Ion,thez,the):
             ep =  ((Id+Ibn)/Id+c1*thez**3)/(1+c1*thez**3)
             i = cherche_index(ep,epv)
         else:
-            i = length(P11)-1
+            i = len(P11)-1
         f11 = P11[i+1]
         f12 = P12[i+1]
         f13 = P13[i+1]

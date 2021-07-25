@@ -11,6 +11,7 @@ class Basegraph(object):
     # Start of user code -> properties/constructors for Basegraph class
 
     # End of user code
+    """""
     def show(self):
         # Start of user code protected zone for show function body
         plt.plot(x_values, y_values, '.')
@@ -20,6 +21,7 @@ class Basegraph(object):
         plt.grid(self.show_grid)
         plt.show()
         raise NotImplementedError
+        """
         # End of user code	
     # Start of user code -> methods for Basegraph class
 
