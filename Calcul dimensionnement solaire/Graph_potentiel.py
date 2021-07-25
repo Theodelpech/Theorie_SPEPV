@@ -1,4 +1,4 @@
-
+import Basegraph
 class Graph_potentiel(Basegraph):
     def __init__(self):
         super().__init__()
