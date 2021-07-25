@@ -1,4 +1,5 @@
-
+import solar_mod
+import properties_mod
 class Potentiel_Localisation(Environnement):
     def __init__(self):
         self.MAX_LONGITUDE = 0.
@@ -7,7 +8,7 @@ class Potentiel_Localisation(Environnement):
         self.MN_LATITUDE = 0.
         self.MIN_LONGITUDE = 0.
         self.Latitude = 0.
-        self.Theo_ou_meteo = False
+        self.Theo_ou_meteo = True
         
     # Start of user code -> properties/constructors for Potentiel_Localisation class
 
