@@ -29,7 +29,7 @@ class Potentiel_Localisation(object):
         rk = 1.02 #à demander
         Alt = 0.052 #en km à demander à l'utilisateur
         gam = 0
-        It_global = zeros(8760)
+        It_global = np.zeros(8760)
         kh = 0
         for j in range(1,365,1):
             for Temps_solaire in range (0,24):
