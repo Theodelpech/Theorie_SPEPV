@@ -31,8 +31,8 @@ class Potentiel_Localisation(object):
         Alt = 0.052 #en km à demander à l'utilisateur
         gam = 0
         It_global = []
-        for Jour in range(1,365,1):
-            for Temps_solaire in range (0,24,1):
+        for Jour in range(1,365):
+            for Temps_solaire in range (0,24):
                 omega_1 = (Temps_solaire-12)*15.000000
                 omega_2 = (omega_1)+15
                 ome_moy = (omega_1+omega_2)/2
@@ -53,7 +53,9 @@ class Potentiel_Localisation(object):
                 Rb = sm.calcul_Rb(self.Latitude, Jour,ome_moy,self.beta, gam)
                 It = sm.modele_isotropique(Ith,Ibh,Idh,self.beta,Rb,self.Albedo) #en W/m2
                 It_global.extend(It)
-                return 
+                Temps_solaire = Temps_solaire +1
+                return It_global
+                Jour = Jour + 1
             return It_global
         # End of user code	
     # Start of user code -> methods for Potentiel_Localisation class
