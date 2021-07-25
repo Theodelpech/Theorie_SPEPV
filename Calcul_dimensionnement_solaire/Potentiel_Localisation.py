@@ -1,4 +1,3 @@
-import Package
 import solar_mod as sm
 import numpy as np
 class Potentiel_Localisation(object):
@@ -35,9 +34,9 @@ class Potentiel_Localisation(object):
                 omega_2 = omega_1+15
                 ome_moy = (omega_1+omega_2)/2
                 delta = sm.decl_solaire(self.Jour)
-                Gon = self.Gsc*(1+0.033((360*self.Jour)/365)) 
+                #Gon = self.Gsc*(1+0.033((360*self.Jour)/365)) 
                 thetaz_moy = sm.zenith_solaire(self.Latitude,delta,omega_1)
-                alphas_moy = 90 - thetaz_moy
+                #alphas_moy = 90 - thetaz_moy
                 m_air = 1/np.cos(thetaz_moy)
                 I0 = sm.irradiation_extraterrestre_horaire(self.Jour, self.Latitude,omega_1,omega_2)
                 a0 = r0*(0.4237-0.00821*(6-Alt)^2)
