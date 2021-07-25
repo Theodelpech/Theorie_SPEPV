@@ -41,9 +41,9 @@ class Potentiel_Localisation(object):
                 #alphas_moy = 90 - thetaz_moy
                 m_air = 1/np.cos(thetaz_moy)
                 Io = sm.irradiation_extraterrestre_horaire(Jour, self.Latitude,omega_1,omega_2)
-                ao = ro*(0.4237-0.00821*(6-Alt)^2)
-                aun = run*(0.5055+0.00595(6.5-Alt)^2)
-                k = rk*(0.2711-0.01858*(2.5-Alt)^2)
+                ao = ro*(0.4237-0.00821*np.square((6-Alt)))
+                aun = run*(0.5055+0.00595*np.square((6.5-Alt)))
+                k = rk*(0.2711-0.01858*np.square((2.5-Alt)))
                 tau_b = ao + aun*np.exp(-k*m_air)
                 Ibh = Io*tau_b
                 tau_d = 0.271 - 0.294*tau_b
