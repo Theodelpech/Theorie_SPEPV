@@ -1,4 +1,3 @@
-from Calcul_dimensionnement_solaire.solar_mod import calcul_Rb
 import solar_mod as sm
 import numpy as np
 
