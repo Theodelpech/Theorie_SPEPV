@@ -207,7 +207,7 @@ def eau_prop(nom,T):
         nom3 = 'Cpg'
         i = label.index(nom2)
         y = eau[:,i]
-        p2 = interp(T,x, y)
+        p3 = interp(T,x, y)
         p = (p1*p2/p3)*10**-6
     elif nom == 'alf':
         nom1 = 'kf'
