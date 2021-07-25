@@ -53,7 +53,7 @@ class Potentiel_Localisation(object):
                 Rb = sm.calcul_Rb(self.Latitude, Jour,ome_moy,self.beta, gam)
                 It = sm.modele_isotropique(Ith,Ibh,Idh,self.beta,Rb,self.Albedo) #en W/m2
                 It_global.extend(It)
-                return It_global
+                return 
             return It_global
         # End of user code	
     # Start of user code -> methods for Potentiel_Localisation class
