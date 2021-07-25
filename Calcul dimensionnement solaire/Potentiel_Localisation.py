@@ -1,5 +1,5 @@
 
-class Potentiel_Localisation(object):
+class Potentiel_Localisation(Environnement):
     def __init__(self):
         self.MAX_LONGITUDE = 0.
         self.MAX_LATITUDE = 0.
@@ -19,10 +19,6 @@ class Potentiel_Localisation(object):
     def Potentiel_solaire_theo(self):
         # Start of user code protected zone for Potentiel_solaire_theo function body
         return 0.
-        # End of user code	
-    def __init(self):
-        # Start of user code protected zone for init function body
-        raise NotImplementedError
         # End of user code	
     # Start of user code -> methods for Potentiel_Localisation class
 
