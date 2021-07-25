@@ -1,4 +1,0 @@
-from Calcul_dimensionnement_solaire.Potentiel_Localisation import Potentiel_Localisation
-import Calcul_dimensionnement_solaire
-potentiel_test = Potentiel_Localisation()
-print (potentiel_test.Potentiel_solaire_theo())
