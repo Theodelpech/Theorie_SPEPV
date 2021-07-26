@@ -32,7 +32,7 @@ class Potentiel_Localisation(object):
         It_global = np.zeros(8760)
         kh = 0
         Jour = 1
-        for j in range(1,365):
+        for Jour in range(1,365):
             for Temps_solaire in range (0,24):
                 omega_1 = (Temps_solaire-12)*15.000000
                 omega_2 = (omega_1)+15
@@ -57,9 +57,8 @@ class Potentiel_Localisation(object):
                 kh = kh +1
                 Temps_solaire = Temps_solaire +1
                 return It_global
-                Jour = Jour + 1
-                Temps_solaire = 0
-                j = j + 1
+            Jour = Jour + 1
+            Temps_solaire = 0
             return It_global
         # End of user code	
     # Start of user code -> methods for Potentiel_Localisation class
