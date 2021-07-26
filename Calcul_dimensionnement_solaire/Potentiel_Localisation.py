@@ -59,6 +59,7 @@ class Potentiel_Localisation(object):
                 return It_global
                 Jour = Jour + 1
                 Temps_solaire = 0
+                j = j + 1
             return It_global
         # End of user code	
     # Start of user code -> methods for Potentiel_Localisation class
