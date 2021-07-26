@@ -1,7 +1,7 @@
 import solar_mod as sm
 import numpy as np
 
-Gsc = 1367.0 #W/m2 irradiation extraterrestre qui frappe la Terre4
+Gsc = 1367.0 #W/m2 irradiation extraterrestre qui frappe la Terre
 Jour = 1 #Premier jour d'une année de 365 jours, le 1er Janvier
 MAX_LONGITUDE = -180
 MAX_LATITUDE = 180
@@ -27,7 +27,7 @@ class Potentiel_Localisation(object):
         ro = 0.97 #à demander
         run = 0.99 #à demander
         rk = 1.02 #à demander
-        Alt = 0.03 #en km à demander à l'utilisateur
+        Alt = 0.052 #en km à demander à l'utilisateur
         gam = 0
         It_global = np.zeros(8760)
         kh = 0
