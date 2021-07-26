@@ -6,4 +6,4 @@ Theo_ou_meteo = True
 beta = 10
 Albedo = 0.2
 potentiel_test = Potentiel_Localisation(Longitude,Latitude,Theo_ou_meteo,beta,Albedo)
-print(potentiel_test.Potentiel_solaire_theo())
+print(len(potentiel_test.Potentiel_solaire_theo()))
