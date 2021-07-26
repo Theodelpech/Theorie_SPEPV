@@ -27,7 +27,7 @@ class Potentiel_Localisation(object):
         ro = 0.97 #à demander
         run = 0.99 #à demander
         rk = 1.02 #à demander
-        Alt = 0.052 #en km à demander à l'utilisateur
+        Alt = 0.03 #en km à demander à l'utilisateur
         gam = 0
         It_global = np.zeros(8760)
         kh = 0

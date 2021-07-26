@@ -347,7 +347,7 @@ def irradiation_extraterrestre_horaire(n,phi,ome1,ome2,cas = 1):
         com = -tand(phi)*tand(delt)
         ome2 = arccos(com)*180.0/pi
     Ion = 3600*G2
-    Io = Ion*12.0/pi*(cosd(phi)*cosd(delt)*(sind(ome2)-sind(ome1))+pi*(ome2-ome1)/180.0*sind(phi)*sind(delt))
+    Io = (Ion*12.0/pi*(cosd(phi)*cosd(delt)*(sind(ome2)-sind(ome1))+pi*(ome2-ome1)/180.0*sind(phi)*sind(delt)))/3600
     Io = max(Io,0)
     return Io
 def irradiation_extraterrestre_jour_moyen(nmois,phi):
