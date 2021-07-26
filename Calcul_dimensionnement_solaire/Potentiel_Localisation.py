@@ -56,7 +56,6 @@ class Potentiel_Localisation(object):
                 It_global[kh] = It
                 kh = kh +1
                 Temps_solaire = Temps_solaire +1
-                return It_global
             Jour = Jour + 1
             Temps_solaire = 0
             return It_global
