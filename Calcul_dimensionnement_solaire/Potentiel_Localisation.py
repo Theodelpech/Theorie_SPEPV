@@ -62,6 +62,6 @@ class Potentiel_Localisation(object):
             return It_global
         # End of user code	
     # Start of user code -> methods for Potentiel_Localisation class
-        return 
+        
     # End of user code
 
