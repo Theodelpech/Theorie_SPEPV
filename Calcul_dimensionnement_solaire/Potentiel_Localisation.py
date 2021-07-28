@@ -33,8 +33,8 @@ class Potentiel_Localisation(object):
         k = rk*(0.2711-0.01858*(2.5-Alt)**2)
         gam = 0
         It_global = np.zeros(8760)
-        kh = 0
-        Jour = 0
+        kh = 1
+        Jour = 1
         Rbh = np.zeros(8760)
         Ioh = np.zeros(8760)
         Ithh = np.zeros(8760)

@@ -1,6 +1,7 @@
 import matplotlib as mil
 mil.use('TkAgg')
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+from scipy.interpolate import make_interp_spline 
 class Basegraph(object):
     def __init__(self,x_values,y_values):
         self.Y_label = "Potentiel solaire"
@@ -15,7 +16,7 @@ class Basegraph(object):
     # End of user code
     def show(self):
         # Start of user code protected zone for show function body
-        plt.plot(self.x_values, self.y_values, '.')
+        plt.plot(self.x_values, self.y_values, 'yellow','solid')
         plt.xlabel(self.X_label)
         plt.ylabel(self.Y_label)
         plt.title(self.title)

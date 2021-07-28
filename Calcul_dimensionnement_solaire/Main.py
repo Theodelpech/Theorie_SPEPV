@@ -2,6 +2,7 @@ from Potentiel_Localisation import Potentiel_Localisation
 import solar_mod as sm
 from Basegraph import Basegraph
 import numpy as np
+import csv
 Longitude = 47.22
 Latitude = -1.55
 Theo_ou_meteo = True
@@ -11,9 +12,10 @@ potentiel_test = Potentiel_Localisation(Longitude,Latitude,Theo_ou_meteo,beta,Al
 Val_TestIt, Val_TestRb, Val_TestIo, Val_TestIth, Val_TestThe = potentiel_test.Potentiel_solaire_theo()
 print(max(Val_TestIt))
 y_valuesIt, y_valuesRb, y_valuesIo, y_valuesIth, y_valuesThe = potentiel_test.Potentiel_solaire_theo()
-x_values = range(0,8760)
+x_values = np.arange(1,8761)
 x= np.array(x_values)
 y=np.array(y_valuesIt)
-GRAPH_test = Basegraph(x,y) #problème 6945 et 6951
+GRAPH_test = Basegraph(x,y)
 GRAPH_test.show()
-print(y_valuesIt[36])
+np.savetxt('Test_x.csv', (x), delimiter=' ')
+np.savetxt('Test_y.csv', (y), delimiter=' ')
