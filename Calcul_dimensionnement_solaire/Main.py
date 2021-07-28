@@ -3,8 +3,8 @@ import solar_mod as sm
 from Basegraph import Basegraph
 import numpy as np
 import csv
-Longitude = 47.22
-Latitude = -1.55
+Longitude = -1.55
+Latitude = 47.22
 Theo_ou_meteo = True
 beta = 10
 Albedo = 0.2

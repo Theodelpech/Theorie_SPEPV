@@ -48,12 +48,11 @@ class Potentiel_Localisation(object):
                 #Gon = self.Gsc*(1+0.033((360*self.Jour)/365)) 
                 thetaz_moy = sm.zenith_solaire(self.Latitude,delta,omega_1)
                 thetaz_moyh[kh] = thetaz_moy
-                #alphas_moy = 90 - thetaz_moy
-                #m_air = 1/np.cos(thetaz_moy)
-                m_air = 2
+                alphas_moy = 90 - thetaz_moy
+                m_air = 1/(sm.cosd(thetaz_moy)+0.50572*(96.07995-thetaz_moy)**(-1.6364))
+                #m_air = 2
                 Io = sm.irradiation_extraterrestre_horaire(Jour, self.Latitude,omega_1,omega_2)
                 Ioh[kh] = Io
-
                 tau_b = ao + aun*np.exp(-k*m_air)
                 Ibh = Io*tau_b
                 tau_d = 0.271 - 0.294*tau_b
