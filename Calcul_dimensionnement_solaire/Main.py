@@ -3,12 +3,13 @@ import solar_mod as sm
 from Basegraph import Basegraph
 import numpy as np
 import csv
-Longitude = -1.55
+from Input import input
+Longitude = Input('Saisie des coordonnées de la localisation', 'Quelle est la longitude ?')
 Latitude = 47.22
 Theo_ou_meteo = True
 beta = 10
 Albedo = 0.2
-potentiel_test = Potentiel_Localisation(Longitude,Latitude,Theo_ou_meteo,beta,Albedo)
+potentiel_test = Potentiel_Localisation(Longitude.message(),Latitude,Theo_ou_meteo,beta,Albedo)
 Val_TestIt, Val_TestRb, Val_TestIo, Val_TestIth, Val_TestThe = potentiel_test.Potentiel_solaire_theo()
 print(max(Val_TestIt))
 y_valuesIt, y_valuesRb, y_valuesIo, y_valuesIth, y_valuesThe = potentiel_test.Potentiel_solaire_theo()
