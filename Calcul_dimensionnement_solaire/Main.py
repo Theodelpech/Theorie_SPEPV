@@ -4,7 +4,9 @@ from Basegraph import Basegraph
 import numpy as np
 import csv
 from Input import input
-Longitude = Input('Saisie des coordonnées de la localisation', 'Quelle est la longitude ?')
+Title = "Saisie des coordonnées de la localisation"
+demande = "Quelle est la longitude ?"
+Longitude = input(Title, demande)
 Latitude = 47.22
 Theo_ou_meteo = True
 beta = 10
