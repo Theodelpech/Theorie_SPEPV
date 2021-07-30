@@ -6,13 +6,14 @@ class input(object):
     def message(self):
         window = tk.Tk()
         window.title(self.Titre)
+        window.geometry("400x100")
         htLabel = tk.Label(window, text=self.demande)
         htLabel.pack() 
         ht = tk.DoubleVar()
         ht.set
-        saisieHT = tk.Entry(window, textvariable=ht, width = 20)
+        saisieHT = tk.Entry(window, textvariable=ht, width = 15)
         saisieHT.pack()
-        bouton1 = tk.Button(window, text="Ok", width = 8, command=window.quit)
+        bouton1 = tk.Button(window, text="Ok", width = 10, command=window.quit)
         bouton1.pack()
         window.mainloop()
         return ht 

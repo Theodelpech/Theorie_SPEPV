@@ -2,18 +2,27 @@ from Potentiel_Localisation import Potentiel_Localisation
 import solar_mod as sm
 from Basegraph import Basegraph
 import numpy as np
-import csv
 from Input import input
-Title = "Saisie des coordonnées de la localisation"
+from Input_bool import input_bool
+#Demande de saisie :
+Title1 = "Saisie des coordonnées de la localisation"
+Title2 = "Vous souhaitez calculer le potentiel théoriquement ou expérimentalement par un fichier météo ?"
 demandeLong = "Quelle est la longitude ?"
-Longitude = input(Title, demandeLong)
 demandeLat = "Quelle est la latitude ?"
-Latitude = input(Title, demandeLat)
-Theo_ou_meteo = True
+demandebool = "Saisir théorique ou expériemental"
+#Variables :
+Longitude = input(Title1, demandeLong)
+Latitude = input(Title1, demandeLat)
+bool = input_bool(Title2, demandebool)
+if bool.message_bool() == "théorique":
+    Theo_ou_meteo = True
+else :
+    Theo_ou_meteo = False
 beta = 10
 Albedo = 0.2
 Lat = Latitude.message()
 Long = Longitude.message()
+#Main du programme :
 potentiel_test = Potentiel_Localisation(Long.get(),Lat.get(),Theo_ou_meteo,beta,Albedo)
 Val_TestIt, Val_TestRb, Val_TestIo, Val_TestIth, Val_TestThe = potentiel_test.Potentiel_solaire_theo()
 print(max(Val_TestIt))
