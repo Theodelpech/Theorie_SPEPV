@@ -16,4 +16,4 @@ class input_bool(object):
         bouton1 = tk.Button(window, text="Ok", width = 20, command=window.quit)
         bouton1.pack()
         window.mainloop()
-        return bo 
+        

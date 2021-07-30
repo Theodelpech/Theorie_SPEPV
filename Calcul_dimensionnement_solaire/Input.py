@@ -16,4 +16,4 @@ class input(object):
         bouton1 = tk.Button(window, text="Ok", width = 10, command=window.quit)
         bouton1.pack()
         window.mainloop()
-        return ht 
+        

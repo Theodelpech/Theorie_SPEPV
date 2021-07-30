@@ -16,7 +16,7 @@ class Basegraph(object):
     # End of user code
     def show(self):
         # Start of user code protected zone for show function body
-        plt.plot(self.x_values, self.y_values, 'yellow','solid')
+        plt.plot(self.x_values, self.y_values, 'y-')
         plt.xlabel(self.X_label)
         plt.ylabel(self.Y_label)
         plt.title(self.title)
