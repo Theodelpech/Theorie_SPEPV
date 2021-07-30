@@ -13,7 +13,8 @@ class input_bool(object):
         bo.set
         saisieBO = tk.Entry(window, textvariable=bo, width = 20)
         saisieBO.pack()
-        bouton1 = tk.Button(window, text="Ok", width = 20, command=window.quit)
+        bouton1 = tk.Button(window, text="Ok", width = 20, command=window.destroy)
         bouton1.pack()
         window.mainloop()
+        return bo
         
