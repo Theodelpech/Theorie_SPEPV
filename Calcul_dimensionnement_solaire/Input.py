@@ -11,10 +11,11 @@ class input(object):
         htLabel = tk.Label(window, text=self.demande)
         htLabel.pack() 
         ht = tk.DoubleVar()
-        ht.set
+        ht.set(ht)
         saisieHT = tk.Entry(window, textvariable=ht, width = 15)
         saisieHT.pack()
         bouton1 = tk.Button(window, text="Ok", width = 10, command=window.destroy)
         bouton1.pack()
         window.mainloop()
+        return ht
    
