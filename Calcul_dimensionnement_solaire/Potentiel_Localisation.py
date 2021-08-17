@@ -1,5 +1,6 @@
 import solar_mod as sm
 import numpy as np
+import time as tm
 
 Gsc = 1367.0 #W/m2 irradiation extraterrestre qui frappe la Terre
 Jour = 1 #Premier jour d'une année de 365 jours, le 1er Janvier
@@ -19,9 +20,42 @@ class Potentiel_Localisation(object):
     # Start of user code -> properties/constructors for Potentiel_Localisation class
 
     # End of user code
-    def Potentiel_solaire_met(self):
+    def Potentiel_solaire_met(self,nom):
+        j_type = array([17,47,75,105,135,162,198,228,258,288,318,344])      # jour type de chaque mois
+        nm = array([31,28,31,30,31,30,31,31,30,31,30,31])                # nombre de jours par mois
+        hrm = array([744,672,744,720,744,720,744,744,720,744,720,744])  # nombre d'heures dans chaque mois
+        hrr = array([744,1416,2160,2880,3624,4344,5088,5832,6552,7296,8016,8760]) # nombre d'heures écoulées après chaque mois
+        donnees = loadtxt(nom,skiprows = 1)
+        hr = donnees[:,0]   # heures
+        Ih =  donnees[:,6]   # valeurs de I total donné par fichier météo en Wh/m2
+        Ibh = donnees[:,12]   # valeurs de I direct donné par fichier météo en Wh/m2
+        Idh  = Ih - Ibh   # valeurs de I diffus donné par fichier météo en Wh/m2
+        i_hr = 0
+        i_jour = 0
+        gam = 0
+        It=np.zeros(8760)
+        Itb = np.zeros(8760)
+        Itd = np.zeros(8760)
+        Itr = np.zeros(8760)
+        for im in range(0,12):  
+            for ij in range(0,nm[im]):        # ij : jour du mois
+                for j in range(0,24):
+                    ome1 = -180.0 + 15.0*j
+                    ome2 = ome1 + 15.0
+                    omem = (ome1+ome2)/2.0
+                    Rb = sm.calcul_Rb(self.Latitude,i_jour+1,omem,self.beta,gam)
+                    delt  = sm.decl_solaire(i_jour+1)
+                    theb = sm.normale_solaire(delt,self.Latitude,omem,self.beta,gam)
+                    thez = sm.zenith_solaire(delt,self.Latitude,omem)
+                    # modele isotrope
+                    Itb [i_hr] = Ibh[i_hr]*Rb
+                    Itd[i_hr] = Idh[i_hr]*(1+sm.cosd(self.beta))/2.0
+                    Itr[i_hr] = Ih[i_hr]*self.Albedo*(1-sm.cosd(self.beta))/2.0
+                    It [i_hr]= Itb[i_hr] + Itd[i_hr] + Itr[i_hr]
+                    i_hr = i_hr+1
+            i_jour = i_jour+1
         # Start of user code protected zone for Potentiel_solaire_met function body
-        return 0.
+        return It
         # End of user code	
     def Potentiel_solaire_theo(self):
         ro = 0.97 #à demander
