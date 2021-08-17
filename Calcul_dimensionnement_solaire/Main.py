@@ -4,6 +4,9 @@ from Basegraph import Basegraph
 import numpy as np
 from Input import input
 import pandas as pd
+import sys
+sys.path.append(' c:/Users/theod/OneDrive/Bureau/Recherche/Python/Theorie_SPEPV/Calcul_dimensionnement_solaire/Package/datamet/Europe/ ')
+
 #Demande de saisie :
 Title1 = "Saisie des informations"
 Title2 = "Vous souhaitez calculer le potentiel théoriquement ou expérimentalement par un fichier météo ?"
