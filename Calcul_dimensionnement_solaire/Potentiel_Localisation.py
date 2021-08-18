@@ -1,8 +1,7 @@
 import solar_mod as sm
 import numpy as np
 import time as tm
-import sys
-sys.path.append(' c:/Users/theod/OneDrive/Bureau/Recherche/Python/Theorie_SPEPV/Calcul_dimensionnement_solaire/Package/datamet/Europe/ ')
+import os
 
 Gsc = 1367.0 #W/m2 irradiation extraterrestre qui frappe la Terre
 Jour = 1 #Premier jour d'une année de 365 jours, le 1er Janvier
@@ -27,37 +26,30 @@ class Potentiel_Localisation(object):
         nm = np.array([31,28,31,30,31,30,31,31,30,31,30,31])                # nombre de jours par mois
         hrm = np.array([744,672,744,720,744,720,744,744,720,744,720,744])  # nombre d'heures dans chaque mois
         hrr = np.array([744,1416,2160,2880,3624,4344,5088,5832,6552,7296,8016,8760]) # nombre d'heures écoulées après chaque mois
-        donnees = np.loadtxt(nom,skiprows = 1)
+        donnees = np.loadtxt(nom,skiprows = 1, usecols=(3,6,12))
+        
         hr = donnees[:,0]   # heures
-        Ih =  donnees[:,6]   # valeurs de I total donné par fichier météo en Wh/m2
-        Ibh = donnees[:,12]   # valeurs de I direct donné par fichier météo en Wh/m2
+        Ih =  donnees[:,1]   # valeurs de I total donné par fichier météo en Wh/m2
+        Ibh = donnees[:,2]   # valeurs de I direct donné par fichier météo en Wh/m2
         Idh  = Ih - Ibh   # valeurs de I diffus donné par fichier météo en Wh/m2
         i_hr = 0
-        i_jour = 0
+        i_jour = 1
         gam = 0
         It=np.zeros(8760)
         Itb = np.zeros(8760)
         Itd = np.zeros(8760)
-        Itr = np.zeros(8760)
-        for im in range(0,12):  
-            for ij in range(0,nm[im]):        # ij : jour du mois
-                for j in range(0,24):
-                    ome1 = -180.0 + 15.0*j
-                    ome2 = ome1 + 15.0
-                    omem = (ome1+ome2)/2.0
-                    Rb = sm.calcul_Rb(self.Latitude,i_jour+1,omem,self.beta,gam)
-                    delt  = sm.decl_solaire(i_jour+1)
-                    theb = sm.normale_solaire(delt,self.Latitude,omem,self.beta,gam)
-                    thez = sm.zenith_solaire(delt,self.Latitude,omem)
-                    # modele isotrope
-                    Itb [i_hr] = Ibh[i_hr]*Rb
-                    Itd[i_hr] = Idh[i_hr]*(1+sm.cosd(self.beta))/2.0
-                    Itr[i_hr] = Ih[i_hr]*self.Albedo*(1-sm.cosd(self.beta))/2.0
-                    It [i_hr]= Itb[i_hr] + Itd[i_hr] + Itr[i_hr]
-                    i_hr = i_hr+1
-            i_jour = i_jour+1
+        Itr = np.zeros(8760)  
+        for jour in range(1,366):        # ij : jour du mois
+            for j in range(0,24):
+                ome1 = -180.0 + 15.0*j
+                ome2 = ome1 + 15.0
+                omem = (ome1+ome2)/2.0
+                Rb = sm.calcul_Rb(self.Latitude,jour,omem,self.beta,gam)
+                # modele isotrope
+                It [i_hr],Itb[i_hr],Itd[i_hr],Itr[i_hr] = sm.modele_isotropique(Ih[i_hr],Ibh[i_hr],Idh[i_hr],self.beta,Rb,self.Albedo)
+                i_hr = i_hr+1
         # Start of user code protected zone for Potentiel_solaire_met function body
-        return It
+        return It, Ih
         # End of user code	
     def Potentiel_solaire_theo(self):
         ro = 0.97 #à demander
@@ -75,7 +67,7 @@ class Potentiel_Localisation(object):
         Ioh = np.zeros(8760)
         Ithh = np.zeros(8760)
         thetaz_moyh = np.zeros(8760)
-        for Jour in range(1,365):
+        for Jour in range(1,366):
             for Temps_solaire in range (0,24):
                 omega_1 = (Temps_solaire-12)*15
                 omega_2 = (omega_1)+15

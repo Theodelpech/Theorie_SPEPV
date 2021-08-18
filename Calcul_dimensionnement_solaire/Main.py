@@ -4,8 +4,8 @@ from Basegraph import Basegraph
 import numpy as np
 from Input import input
 import pandas as pd
-import sys
-sys.path.append(' c:/Users/theod/OneDrive/Bureau/Recherche/Python/Theorie_SPEPV/Calcul_dimensionnement_solaire/Package/datamet/Europe/ ')
+
+
 
 #Demande de saisie :
 Title1 = "Saisie des informations"
@@ -59,12 +59,12 @@ if Theo_ou_meteo == True :
     """
 #Calcul expérimentalement du potentiel solaire maximum de la Potentiel_Localisation
 else :  
-    nom_met = 'FR-Nantes-72220.tm2'
+    nom_met = 'Calcul_dimensionnement_solaire\Package\datamet\Europe\FR-Bordeaux-75100.tm2'
     potentiel_test = Potentiel_Localisation(Long.get(),Lat.get(),Theo_ou_meteo,beta.get(),Albedo.get())
-    y_valuesIt = potentiel_test.Potentiel_solaire_met(nom_met)
+    y_valuesIt, y_valuesIh = potentiel_test.Potentiel_solaire_met(nom_met)
     x_values = np.arange(1,8761)
     x_valuespd = pd.DataFrame(x_values)
-    y_pd = pd.DataFrame(y_valuesIt)
+    y_pd = pd.DataFrame(y_valuesIh)
     y_g = y_pd.replace(np.nan,0)
     x= np.array(x_valuespd)
     y=np.array(y_g)
