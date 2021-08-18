@@ -41,9 +41,7 @@ print(choixmet.get())
 #Calcul théoriquement du potentiel solaire maximum de la localisation
 if Theo_ou_meteo == True : 
     potentiel_test = Potentiel_Localisation(Long.get(),Lat.get(),Theo_ou_meteo,beta.get(),Albedo.get())
-    Val_TestIt, Val_TestRb, Val_TestIo, Val_TestIth, Val_TestThe = potentiel_test.Potentiel_solaire_theo()
-    print(max(Val_TestIt))
-    y_valuesIt, y_valuesRb, y_valuesIo, y_valuesIth, y_valuesThe = potentiel_test.Potentiel_solaire_theo()
+    y_valuesIt = potentiel_test.Potentiel_solaire_theo()
     x_values = np.arange(1,8761)
     x_valuespd = pd.DataFrame(x_values)
     y_pd = pd.DataFrame(y_valuesIt)
@@ -61,7 +59,7 @@ if Theo_ou_meteo == True :
 else :  
     nom_met = 'Calcul_dimensionnement_solaire\Package\datamet\Europe\FR-Bordeaux-75100.tm2'
     potentiel_test = Potentiel_Localisation(Long.get(),Lat.get(),Theo_ou_meteo,beta.get(),Albedo.get())
-    y_valuesIt, y_valuesIh = potentiel_test.Potentiel_solaire_met(nom_met)
+    y_valuesIt = potentiel_test.Potentiel_solaire_met(nom_met)
     x_values = np.arange(1,8761)
     x_valuespd = pd.DataFrame(x_values)
     y_pd = pd.DataFrame(y_valuesIt)

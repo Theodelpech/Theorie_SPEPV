@@ -1,7 +1,6 @@
 import solar_mod as sm
 import numpy as np
 import time as tm
-import os
 
 Gsc = 1367.0 #W/m2 irradiation extraterrestre qui frappe la Terre
 Jour = 1 #Premier jour d'une année de 365 jours, le 1er Janvier
@@ -42,7 +41,7 @@ class Potentiel_Localisation(object):
                 It [i_hr],Itb[i_hr],Itd[i_hr],Itr[i_hr] = sm.modele_isotropique(Ih[i_hr],Ibh[i_hr],Idh[i_hr],self.beta,Rb,self.Albedo)
                 i_hr = i_hr+1
         # Start of user code protected zone for Potentiel_solaire_met function body
-        return It, Ih
+        return It
         # End of user code	
     def Potentiel_solaire_theo(self):
         ro = 0.97 #à demander
@@ -86,7 +85,7 @@ class Potentiel_Localisation(object):
                 It_global[kh] = It
                 kh = kh+1 
                 Temps_solaire = Temps_solaire +1
-        return It_global, Rbh, Ioh, Ithh, thetaz_moyh
+        return It_global
         # End of user code	
     # Start of user code -> methods for Potentiel_Localisation class
         
