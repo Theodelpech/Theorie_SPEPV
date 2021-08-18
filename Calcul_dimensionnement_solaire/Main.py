@@ -49,9 +49,9 @@ if Theo_ou_meteo == True :
     y_pd = pd.DataFrame(y_valuesIt)
     y_g = y_pd.replace(np.nan,0)
     x= np.array(x_valuespd)
-    y=np.array(y_g)
-    GRAPH_test = Basegraph(x,y)
-    GRAPH_test.show()
+    y_pottheo=np.array(y_g)
+    GRAPH_pottheo = Basegraph(x,y_pottheo)
+    GRAPH_pottheo.show()
     """
     #Sauvegarde des données dans des fichiers externes
     np.savetxt('Test_x.csv', (x), delimiter=' ')
@@ -67,6 +67,8 @@ else :
     y_pd = pd.DataFrame(y_valuesIt)
     y_g = y_pd.replace(np.nan,0)
     x= np.array(x_valuespd)
-    y=np.array(y_g)
-    GRAPH_test = Basegraph(x,y)
-    GRAPH_test.show()
+    y_potmet=np.array(y_g)
+    GRAPH_potmet = Basegraph(x,y_potmet)
+    GRAPH_potmet.show()
+
+#Calcul de l'énergie récupérable avec le panneau solaire :
