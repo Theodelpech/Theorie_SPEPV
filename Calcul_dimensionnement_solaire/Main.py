@@ -4,17 +4,20 @@ from Basegraph import Basegraph
 import numpy as np
 from Input import input
 import pandas as pd
+from Panneau import Panneau
 
 
 
 #Demande de saisie :
 Title1 = "Saisie des informations"
 Title2 = "Vous souhaitez calculer le potentiel théoriquement ou expérimentalement par un fichier météo ?"
+Titlepan = "Paramètres du panneau"
 demandeLong = "Quelle est la longitude ?"
 demandeLat = "Quelle est la latitude ?"
 demandebool = "Saisir 1 pour la méthode théorique ou 0 pour l'expérimental"
 demandebeta = "Quel est l'angle d'inclinaison du panneau ?"
 demandealb = "Quel est l'albédo du lieu d'implantation ?"
+demandeeffi = "Quelle est l'efficacité du panneau ?"
 #Variables :
 Longitude = input(Title1, demandeLong)
 Latitude = input(Title1, demandeLat)
@@ -68,5 +71,12 @@ else :
     y_potmet=np.array(y_g)
     GRAPH_potmet = Basegraph(x,y_potmet)
     GRAPH_potmet.show()
+    #Calcul de l'énergie récupérable avec le panneau solaire 
+    #Courbe d'énergie récupérée par le panneau : 
+    effi_dem = input(Titlepan, demandeeffi)
+    effi = effi_dem.message()
+    panneau_potmet = Panneau(effi,0,0,0,0,0,0)
+    panneau_potmet.energ_recup(y_potmet)
 
-#Calcul de l'énergie récupérable avec le panneau solaire :
+ 
+#Courbe I-V puis P-V du panneau : 
