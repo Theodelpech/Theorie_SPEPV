@@ -22,18 +22,11 @@ class Potentiel_Localisation(object):
 
     # End of user code
     def Potentiel_solaire_met(self,nom):
-        j_type = np.array([17,47,75,105,135,162,198,228,258,288,318,344])      # jour type de chaque mois
-        nm = np.array([31,28,31,30,31,30,31,31,30,31,30,31])                # nombre de jours par mois
-        hrm = np.array([744,672,744,720,744,720,744,744,720,744,720,744])  # nombre d'heures dans chaque mois
-        hrr = np.array([744,1416,2160,2880,3624,4344,5088,5832,6552,7296,8016,8760]) # nombre d'heures écoulées après chaque mois
-        donnees = np.loadtxt(nom,skiprows = 1, usecols=(3,6,12))
-        
-        hr = donnees[:,0]   # heures
-        Ih =  donnees[:,1]   # valeurs de I total donné par fichier météo en Wh/m2
-        Ibh = donnees[:,2]   # valeurs de I direct donné par fichier météo en Wh/m2
+        donnees = np.loadtxt(nom,skiprows = 1, usecols=(6,12))
+        Ih =  donnees[:,0]   # valeurs de I total donné par fichier météo en Wh/m2
+        Ibh = donnees[:,1]   # valeurs de I direct donné par fichier météo en Wh/m2
         Idh  = Ih - Ibh   # valeurs de I diffus donné par fichier météo en Wh/m2
         i_hr = 0
-        i_jour = 1
         gam = 0
         It=np.zeros(8760)
         Itb = np.zeros(8760)

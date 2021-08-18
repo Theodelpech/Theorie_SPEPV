@@ -64,7 +64,7 @@ else :
     y_valuesIt, y_valuesIh = potentiel_test.Potentiel_solaire_met(nom_met)
     x_values = np.arange(1,8761)
     x_valuespd = pd.DataFrame(x_values)
-    y_pd = pd.DataFrame(y_valuesIh)
+    y_pd = pd.DataFrame(y_valuesIt)
     y_g = y_pd.replace(np.nan,0)
     x= np.array(x_valuespd)
     y=np.array(y_g)
