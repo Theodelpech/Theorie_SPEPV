@@ -18,7 +18,7 @@ class Panneau (object):
         self.Aire = Aire
     def energ_recup (self, It):
         Itreel = It*(self.effi/100)
-        x_values = np.arange(1,8761)
+        x_values = np.arange(0,8761)
         x_valuespd = pd.DataFrame(x_values)
         y_pd = pd.DataFrame(Itreel)
         y_g = y_pd.replace(np.nan,0)

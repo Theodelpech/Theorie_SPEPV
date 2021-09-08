@@ -52,14 +52,14 @@ class Potentiel_Localisation(object):
         aun = run*(0.5055+0.00595*(6.5-Alt)**2)
         k = rk*(0.2711-0.01858*(2.5-Alt)**2)
         gam = 0
-        It_global = np.zeros(8760)
+        It_global = np.zeros(8761)
         kh = 1
         Jour = 1
-        Rbh = np.zeros(8760)
-        Ioh = np.zeros(8760)
-        Ithh = np.zeros(8760)
-        thetaz_moyh = np.zeros(8760)
-        for Jour in range(1,366):
+        Rbh = np.zeros(8761)
+        Ioh = np.zeros(8761)
+        Ithh = np.zeros(8761)
+        thetaz_moyh = np.zeros(8761)
+        for Jour in range(0,365):
             for Temps_solaire in range (0,24):
                 omega_1 = (Temps_solaire-12)*15
                 omega_2 = (omega_1)+15
