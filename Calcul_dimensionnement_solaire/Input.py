@@ -7,7 +7,7 @@ class input(object):
     def message(self):
         window = tk.Tk()
         window.title(self.Titre)
-        window.geometry("400x100")
+        window.geometry("500x100")
         htLabel = tk.Label(window, text=self.demande)
         htLabel.pack() 
         ht = tk.DoubleVar()
