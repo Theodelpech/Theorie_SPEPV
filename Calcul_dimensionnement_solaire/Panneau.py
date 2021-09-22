@@ -55,11 +55,13 @@ class Panneau (object):
         param = np.array([Isc,Voc,Im,Vm,muV,muI])
         #Résolution
         xf = sm.pv_module(xi,param)
+        """
         IL = xf[0]
         Io = xf[1]
         a = xf[2]
         Rsh = xf[3]
         Rs = xf[4]
+        """
         #génération courbe I-V du panneau :
         dV = 0.25
         Vv = np.arange(0.0,Voc+dV,dV)
@@ -100,6 +102,4 @@ class Panneau (object):
         plt.ylabel('Puissance en Watt')
         Basegraph.plotyy(Vv,Iv,Vv,Pv)
         plt.show()
-    
-
-
+        return Iv, Vv, nV

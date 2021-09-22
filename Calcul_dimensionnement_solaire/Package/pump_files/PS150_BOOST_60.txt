@@ -1,0 +1,25 @@
+PUMP NAME: template
+PRICE: 99999  					# in USD
+ELECTRICAL ARCHITECTURE: permanent_magnet	
+# '.' are mandatory inputs that should be replaced by specifications or the line should be removed. 
+# 'nan' are optional input.
+# Units for columns are in the order: 
+# [V]	[m]	[A]	[L/min]	[W]	[no unit]
+voltage	tdh	current	flow	power	efficiency
+12	5	2.916	4.333	35	nan
+12	10	3.333	4.283	40	nan
+12	15	3.75	4.233	45	nan
+12	20	4.583	4.2	55	nan
+12	25	5.25	4.166	63	nan
+12	30	6	4.133	72	nan
+12	40	6.667	4.1	80	nan
+12	45	7.083	4.066	85	nan
+24	50	3.75	4.033	90	nan
+24	60	3.958	4	95	nan
+24	70	4.583	3.983	110	nan
+24	80	5.208	3.966	125	nan
+24	90	5.833	3.933	140	nan
+24	100	6.875	3.9	165	nan
+24	120	7.708	3.8	185	nan
+24	140	9.167	3.7	220	nan
+

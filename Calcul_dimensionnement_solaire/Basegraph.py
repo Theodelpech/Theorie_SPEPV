@@ -3,11 +3,11 @@ mil.use('TkAgg')
 import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline 
 class Basegraph(object):
-    def __init__(self,x_values,y_values):
-        self.Y_label = "Potentiel solaire"
-        self.X_label = "Heures de l'année"
+    def __init__(self,x_values,y_values, Ylabel, Xlabel,Title):
+        self.Y_label = Ylabel
+        self.X_label = Xlabel
         self.show_grid = True
-        self.title = "Potentiel solaire de la localisation sur une année"
+        self.title = Title
         self.x_values = x_values
         self.y_values = y_values
         
