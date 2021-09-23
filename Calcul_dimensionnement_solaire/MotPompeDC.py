@@ -12,6 +12,7 @@ import re
 from inverse import *
 from errors import *
 from function_models import *
+
 class MotPompeDC (object):
 
     def __init__(self, path):
@@ -80,7 +81,7 @@ class MotPompeDC (object):
         return {'I':  Ivect, 'V': Vvect}
     
         
-    def functIforVH_Arab(self):
+    def functIforVH_Arab(self): 
         """
         Function using Hadj Arab model for modeling I vs V of pump.
 

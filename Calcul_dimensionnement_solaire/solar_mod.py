@@ -1060,12 +1060,16 @@ def I_pvV(x,V,G = 1000.0,T = 25.0 + 273.15):
         In = IL - Id - (V+I*Rs)/Rsh
         y = In - I
         return y
+    Im = new_func(I_pv_fct)
+    g = I_pv_fct(Im)
+    Im = max(Im,0)
+    return Im
+
+def new_func(I_pv_fct):
     try:
         Im = newton(I_pv_fct,1)
     except RuntimeError:
         Im = 0
-    g = I_pv_fct(Im)
-    Im = max(Im,0)
     return Im
 
 def G_pvI(x,I,V = 8.0,T = 25.0 + 273.15):
