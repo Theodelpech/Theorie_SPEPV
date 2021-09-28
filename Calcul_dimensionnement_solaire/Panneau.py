@@ -24,7 +24,7 @@ class Panneau (object):
         y_g = y_pd.replace(np.nan,0)
         x= np.array(x_valuespd)
         y_energrecup=np.array(y_g)
-        GRAPH_pottheo = Basegraph(x,y_energrecup)
+        GRAPH_pottheo = Basegraph(x,y_energrecup,"Energie en W/m2","Heures de l'année","Energie récupérée par le panneau à chaque heures de l'année")
         GRAPH_pottheo.show()
     def courbeIV (self):
         k = 1.381e-23

@@ -9,12 +9,13 @@ MAX_LATITUDE = 180
 MN_LATITUDE = -90
 MIN_LONGITUDE = 90
 class Potentiel_Localisation(object):
-    def __init__(self,Longitude,Latitude,Theo_ou_meteo,beta,Albedo):
+    def __init__(self,Longitude,Latitude,Theo_ou_meteo,beta,Albedo,gam):
         self.Longitude = Longitude #à demander
         self.Latitude = Latitude #à demander
         self.Theo_ou_meteo = Theo_ou_meteo #à demander
         self.beta = beta #à demander
         self.Albedo = Albedo #0.2 albedo moyen entre une forêt de conifère et un sol sombre (à demander)
+        self.gam = gam
 
         
     # Start of user code -> properties/constructors for Potentiel_Localisation class
@@ -26,32 +27,27 @@ class Potentiel_Localisation(object):
         Ibh = donnees[:,1]   # valeurs de I direct donné par fichier météo en Wh/m2
         Idh  = Ih - Ibh   # valeurs de I diffus donné par fichier météo en Wh/m2
         i_hr = 0
-        gam = 0
-        It=np.zeros(8760)
-        Itb = np.zeros(8760)
-        Itd = np.zeros(8760)
-        Itr = np.zeros(8760)  
+        It=np.zeros(8761)
+        Itb = np.zeros(8761)
+        Itd = np.zeros(8761)
+        Itr = np.zeros(8761)  
         for jour in range(1,366):        # ij : jour du mois
             for j in range(0,24):
                 ome1 = -180.0 + 15.0*j
                 ome2 = ome1 + 15.0
                 omem = (ome1+ome2)/2.0
-                Rb = sm.calcul_Rb(self.Latitude,jour,omem,self.beta,gam)
+                Rb = sm.calcul_Rb(self.Latitude,jour,omem,self.beta,self.gam)
                 # modele isotrope
                 It [i_hr],Itb[i_hr],Itd[i_hr],Itr[i_hr] = sm.modele_isotropique(Ih[i_hr],Ibh[i_hr],Idh[i_hr],self.beta,Rb,self.Albedo)
                 i_hr = i_hr+1
         # Start of user code protected zone for Potentiel_solaire_met function body
         return It
         # End of user code	
-    def Potentiel_solaire_theo(self):
-        ro = 0.97 #à demander
-        run = 0.99 #à demander
-        rk = 1.02 #à demander
-        Alt = 0.052 #en km à demander à l'utilisateur
+    def Potentiel_solaire_theo(self,ro,run,rk,Alth):
+        Alt = Alth/1000
         ao = ro*(0.4237-0.00821*(6-Alt)**2)
         aun = run*(0.5055+0.00595*(6.5-Alt)**2)
         k = rk*(0.2711-0.01858*(2.5-Alt)**2)
-        gam = 0
         It_global = np.zeros(8761)
         kh = 1
         Jour = 1
@@ -79,7 +75,7 @@ class Potentiel_Localisation(object):
                 Idh = Io*tau_d
                 Ith = Idh + Ibh
                 Ithh[kh] = Ith
-                Rb = sm.calcul_Rb(self.Latitude, Jour,ome_moy,self.beta, gam)
+                Rb = sm.calcul_Rb(self.Latitude, Jour,ome_moy,self.beta, self.gam)
                 Rbh[kh] = Rb
                 It,Itb,Itd,Itr = sm.modele_isotropique(Ith,Ibh,Idh,self.beta,Rb,self.Albedo) #en W/m2
                 It_global[kh] = It
