@@ -127,9 +127,18 @@ else :
     ivgraphpomp.show()
     #Point de fonctionnement : (à chercher sur graphe)
     npan = max(len(Vpan),len(Vrange_load))
-    courbe_pf = Basegraph(None, None,'Courant en Ampère','Tension en Volt','Courbes IV : panneau en bleu, moteur-pompe en vert')
+    courbe_pf = Basegraph(None, None,'Courant en Ampère','Tension en Volt','Courbes IV : panneau en bleu, moteur-pompe en vert (cherchez graphiquement le point de fonctionnement et le retenir)')
     courbe_pf.operating_point(Ipan,Vpan,xpomp(Vrange_load, tdh, error_raising=False),Vrange_load,Ms.get(),Mp.get())
-    #Courbe débit pompé par heure sur l'année :
+    #Débit du point de fonctionnement :
+    Qpomp, PHpomp = Motpompe.functQforPH_Arab()
+    pf = input("Quel est le point de fonctionnement identifié ?",None)
+    IPF, VPF = pf.mespf('If (en A) :','Vf (en V) :')
+    Power = float((IPF.get())*(VPF.get()))
+    print("La puissance requise minimale de fonctionnement est de :",Power," en W")
+    Qp = Qpomp(Power, tdh)
+    print("Pour ce point de fonctionnement le debit est de :",Qp['Q']," en L/min")
+    print("La puissance non utilisee est de :",Qp['P_unused']," en W")
+
     
 
 
