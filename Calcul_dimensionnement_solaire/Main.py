@@ -64,11 +64,15 @@ if choixpot.get() == 1 :
         parampan = input('Paramètres du panneau à entrer','Quels sont les paramètres du panneau ?') 
         effi, Isc, Voc, Imp, Vmp, Uvoc, UIl, Cel, Aire, Mp, Ms = parampan.messagemult('Efficacite du panneau (en %) =', 'Isc (en A) = ','Voc (en V) =','Imp (en A) =','Vmp (en V) =', 'Uvoc =','UIl =','Nombre de cellules =','Aire (en m2) =','Nombre de panneaux en parallèle :','Nombre de panneaux en série :')
         panneau_pot = Panneau(effi.get(), Isc.get(), Voc.get(),Imp.get(),Vmp.get(),Uvoc.get(),UIl.get(),Cel.get(),Aire.get())
-        panneau_pot.energ_recup(y_pot)
+        Preel = panneau_pot.energ_recup(y_pot)
         #Courbe I-V puis P-V du panneau : 
         Ipan, Vpan, npan = panneau_pot.courbeIV()
         #Courbe I_V moteur-pompe DC :
-        Motpompe = MotPompeDC('Calcul_dimensionnement_solaire\Package\pump_files\PS150_BOOST_60.txt')
+        dem_pump = input("Quelle pompe souhaitez vous utiliser ?", "Entrez la pompe comme suit : \pompe.txt")
+        pu = dem_pump.meschemin()
+        #\PS150_BOOST_60.txt
+        chem_pump = 'Calcul_dimensionnement_solaire\Package\pump_files'+pu.get()
+        Motpompe = MotPompeDC(chem_pump)
         tdhpara = input('Paramètres du système de pompage pour le calcul de la HMT',None)
         tdh = tdhpara.mestdh("Hauteur entre le niveau d'eau et l'apiration de la pompe (en m):", "Hauteur entre le refoulement et le point d'utilisation (en m):","Longueur des tuyaux (en m):", "Pression résiduelle à la sortie du robinet (en bars): ")
         xpomp, ypomp = Motpompe.functIforVH_Arab()
@@ -78,9 +82,21 @@ if choixpot.get() == 1 :
         npan = max(len(Vpan),len(Vrange_load))
         courbe_pf = Basegraph(None, None,'Courant en Ampère','Tension en Volt','Courbes IV : panneau en bleu, moteur-pompe en vert')
         courbe_pf.operating_point(Ipan,Vpan,xpomp(Vrange_load, tdh, error_raising=False),Vrange_load,Ms.get(),Mp.get())
-        #Calcul expérimentalement du potentiel solaire maximum de la Potentiel_Localisation :
-    else :  
-        nom_met = 'Calcul_dimensionnement_solaire\Package\datamet\Europe\FR-Bordeaux-75100.tm2'
+        #Débit du point de fonctionnement :
+        Qpomp, PHpomp = Motpompe.functQforPH_Arab()
+        pf = input("Quel est le point de fonctionnement identifié ?",None)
+        IPF, VPF = pf.mespf('If (en A) :','Vf (en V) :')
+        Power = float((IPF.get())*(VPF.get()))
+        Qreel, Qtotal = Motpompe.debannee(Preel,Power,tdh,Qpomp)
+        print("Le systeme a pompe :",Qtotal,"L sur une annee soit :", Qtotal/365,"L par jours")
+#Calcul expérimentalement du potentiel solaire maximum de la Potentiel_Localisation :
+    else : 
+        demchem = "\Continent\ nomdufichierfichier.tm2"
+        demche = "Entrez le fichier comme suit : "+ demchem.replace(" ","")
+        chemin = input("Quel est le fichier que vous souhaitez utiliser ?",demche)
+        chem_met = chemin.meschemin() 
+        #\Europe\FR-Bordeaux-75100.tm2
+        nom_met = "Calcul_dimensionnement_solaire\Package\datamet"  + chem_met.get()
         potentiel_test = Potentiel_Localisation(Long.get(),Lat.get(),Theo_ou_meteo,beta.get(),Albedo.get(),gam.get())
         y_valuesIt = potentiel_test.Potentiel_solaire_met(nom_met)
         x_values = np.arange(0,8761)
@@ -96,13 +112,17 @@ if choixpot.get() == 1 :
         parampan = input('Paramètres du panneau à entrer','Quels sont les paramètres du panneau ?') 
         effi, Isc, Voc, Imp, Vmp, Uvoc, UIl, Cel, Aire, Mp, Ms = parampan.messagemult('Efficacite du panneau (en %) =', 'Isc (en A) = ','Voc (en V) =','Imp (en A) =','Vmp (en V) =', 'Uvoc =','UIl =','Nombre de cellules =','Aire (en m2) =','Nombre de panneaux en parallèle :','Nombre de panneaux en série :')
         panneau_pot = Panneau(effi.get(), Isc.get(), Voc.get(),Imp.get(),Vmp.get(),Uvoc.get(),UIl.get(),Cel.get(),Aire.get())
-        panneau_pot.energ_recup(y_pot)
+        Preel = panneau_pot.energ_recup(y_pot)
         #Courbe I-V puis P-V du panneau : 
         Ipan, Vpan, npan = panneau_pot.courbeIV()
         #Courbe I_V moteur-pompe DC :
-        Motpompe = MotPompeDC('Calcul_dimensionnement_solaire\Package\pump_files\PS150_BOOST_60.txt')
+        dem_pump = input("Quelle pompe souhaitez vous utiliser ?", "Entrez la pompe comme suit : \pompe.txt")
+        pu = dem_pump.meschemin()
+        #\PS150_BOOST_60.txt
+        chem_pump = 'Calcul_dimensionnement_solaire\Package\pump_files'+pu.get()
+        Motpompe = MotPompeDC(chem_pump)
         tdhpara = input('Paramètres du système de pompage pour le calcul de la HMT',None)
-        tdh = tdhpara.mestdh("Hauteur entre le niveau d'eau et l'apiration de la pompe (en m):", "Hauteur entre le refoulement et le point d'utilisation (en m):","Longueur des tuyaux (en m):", "Pression résiduelle à la sortie du robinet (en bars): ")
+        tdh,NPSHreq = tdhpara.mestdh("Hauteur entre le niveau d'eau et l'apiration de la pompe (en m):", "Hauteur entre le refoulement et le point d'utilisation (en m):","Longueur des tuyaux (en m):", "Pression résiduelle à la sortie du robinet (en bars): ", "Quel est le NPSH requis de la pompe ?")
         xpomp, ypomp = Motpompe.functIforVH_Arab()
         Vrange_load = np.arange(*ypomp['V'](tdh))
         ivgraphpomp = Basegraph(Vrange_load,xpomp(Vrange_load, tdh, error_raising=False),"Courant I en Ampère", "Tension V en Volt", "Courbe I-V de l'ensemble moteur pompe")
@@ -110,6 +130,14 @@ if choixpot.get() == 1 :
         npan = max(len(Vpan),len(Vrange_load))
         courbe_pf = Basegraph(None, None,'Courant en Ampère','Tension en Volt','Courbes IV : panneau en bleu, moteur-pompe en vert')
         courbe_pf.operating_point(Ipan,Vpan,xpomp(Vrange_load, tdh, error_raising=False),Vrange_load,Ms.get(),Mp.get())
+        #Débit du point de fonctionnement :
+        Qpomp, PHpomp = Motpompe.functQforPH_Arab()
+        pf = input("Quel est le point de fonctionnement identifié ?",None)
+        IPF, VPF = pf.mespf('If (en A) :','Vf (en V) :')
+        Power = float((IPF.get())*(VPF.get()))
+        Qreel, Qtotal = Motpompe.debannee(Preel,Power,tdh,Qpomp)
+        print("Le systeme a pompe :",Qtotal,"L sur une annee soit :", Qtotal/365,"L par jours")
+        
 else :
     parampan = input('Paramètres du panneau à entrer','Quels sont les paramètres du panneau ?')
     effi, Isc, Voc, Imp, Vmp, Uvoc, UIl, Cel, Aire, Mp, Ms = parampan.messagemult('Efficacite du panneau (en %) =', 'Isc (en A) = ','Voc (en V) =','Imp (en A) =','Vmp (en V) =', 'Uvoc =','UIl =','Nombre de cellules =','Aire (en m2) =','Nombre de panneaux en parallèle :','Nombre de panneaux en série :')
@@ -118,7 +146,11 @@ else :
     #Courbe I-V puis P-V du panneau : 
     Ipan, Vpan, npan = panneau_test.courbeIV()
     #Courbe I_V moteur-pompe DC :
-    Motpompe = MotPompeDC('Calcul_dimensionnement_solaire\Package\pump_files\PS150_BOOST_60.txt')
+    dem_pump = input("Quelle pompe souhaitez vous utiliser ?", "Entrez la pompe comme suit : \pompe.txt")
+    pu = dem_pump.meschemin()
+    #\PS150_BOOST_60.txt
+    chem_pump = 'Calcul_dimensionnement_solaire\Package\pump_files'+pu.get()
+    Motpompe = MotPompeDC(chem_pump)
     tdhpara = input('Paramètres du système de pompage pour le calcul de la HMT',None)
     tdh = tdhpara.mestdh("Hauteur entre le niveau d'eau et l'apiration de la pompe (en m):", "Hauteur entre le refoulement et le point d'utilisation (en m):","Longueur des tuyaux (en m):", "Pression résiduelle à la sortie du robinet (en bars): ")
     xpomp, ypomp = Motpompe.functIforVH_Arab()

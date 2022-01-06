@@ -18,6 +18,20 @@ class input(object):
         bouton1.pack()
         window.mainloop()
         return ht
+    def meschemin(self):
+        window = tk.Tk()
+        window.title(self.Titre)
+        window.geometry("1000x150")
+        htLabel = tk.Label(window, text=self.demande)
+        htLabel.pack() 
+        ht = tk.StringVar()
+        ht.set(ht)
+        saisieHT = tk.Entry(window, textvariable=ht, width = 25)
+        saisieHT.pack()
+        bouton1 = tk.Button(window, text="Ok", width = 10, command=window.destroy)
+        bouton1.pack()
+        window.mainloop()
+        return ht
     
     def messagemult(self,demande0,demande1,demande2,demande3,demande4,demande5,demande6,demande7,demande8,demande9,demande10):
         window = tk.Tk()
@@ -164,7 +178,7 @@ class input(object):
         bouton1.pack()
         window.mainloop()
         return ht0,ht1,ht2,ht3
-    def mestdh(self,demande0,demande1,demande2,demande3):
+    def mestdh(self,demande0,demande1,demande2,demande3, demande4):
             window = tk.Tk()
             window.title(self.Titre)
             window.geometry("800x400")
@@ -192,11 +206,17 @@ class input(object):
             ht3.set(ht3)
             saisieHT3 = tk.Entry(window, textvariable=ht3, width = 15)
             saisieHT3.pack()
+            ht4Label = tk.Label(window, text=demande4)
+            ht4Label.pack() 
+            ht4 = tk.DoubleVar()
+            ht4.set(ht4)
+            saisieHT4 = tk.Entry(window, textvariable=ht4, width = 15)
+            saisieHT4.pack()
             bouton1 = tk.Button(window, text="Ok", width = 10, command=window.destroy)
             bouton1.pack()
             window.mainloop()
             tdh = ht0.get() + ht1.get() + 0.1*ht2.get() + ht3.get()*10
-            return tdh
+            return tdh, ht4
     def mespf(self,demande0,demande1):
         window = tk.Tk()
         window.title(self.Titre)

@@ -12,6 +12,7 @@ import re
 from inverse import *
 from errors import *
 from function_models import *
+from Basegraph import Basegraph
 
 
 class MotPompeDC(object):
@@ -196,6 +197,28 @@ class MotPompeDC(object):
                 return {'Q': Q, 'P_unused': P_unused}
 
             return functQ, intervals
+    def debannee(self, It,Power,tdh,Qp):
+        Q = np.zeros(8761)
+        Qt = 0
+        for i in range(0,8761):
+            if It[i] > Power :
+                Q[i] = Qp(It[i],tdh)['Q']*60
+                Qt =Qt+ Q[i]
+            else :
+                Q[i] = 0
+        Qtotal = Qt
+        x_values = np.arange(0,8761)
+        x_valuespd = pd.DataFrame(x_values)
+        y_pd = pd.DataFrame(Q)
+        y_g = y_pd.replace(np.nan,0)
+        x= np.array(x_valuespd)
+        y_deb=np.array(y_g)
+        GRAPH_deb = Basegraph(x,y_deb,"Débit en L/heure","Heures de l'année","Débit pompé à chaques heures de l'année")
+        GRAPH_deb.show()
+        return Q, Qtotal
+         
+
+        
 
 def get_data_pump(path):
         # open in read-only option
@@ -388,7 +411,7 @@ def _curves_coeffs_Arab06(specs, data_completeness):
         funct_mod_1 = compound_polynomial_1_2
         funct_mod_2 = compound_polynomial_1_3
     else:
-        raise errors.InsufficientDataError('Lack of information on lpm, '
+        raise InsufficientDataError('Lack of information on lpm, '
                                            'current or tdh for pump.')
 
     # f1: I(V, H)
@@ -456,7 +479,7 @@ def _curves_coeffs_Arab06(specs, data_completeness):
             and data_completeness['head_number'] >= 4:
         funct_mod_2 = compound_polynomial_2_3
     else:
-        raise errors.InsufficientDataError('Lack of information on lpm, '
+        raise InsufficientDataError('Lack of information on lpm, '
                                            'current or tdh for pump.')
 
     # f2: Q(P, H)
@@ -541,7 +564,7 @@ def _curves_coeffs_theoretical(specs, data_completeness, elec_archi,
             return _curves_coeffs_theoretical_basic(
                 specs, data_completeness, elec_archi)
     else:
-        raise errors.InsufficientDataError(
+        raise InsufficientDataError(
             'Pump data is too limited to apply the model forced '
             'by force_model.')
 
@@ -1024,7 +1047,7 @@ def plot_Q_vs_P_H_3d(pump):
     for index, row in pump.specs.iterrows():
         try:
             Q = f2(row.power, row.tdh)
-        except (errors.PowerError, errors.HeadError):
+        except (PowerError, HeadError):
             Q = 0
         lpm_check.append(Q['Q'])
     fig = plt.figure()
@@ -1062,7 +1085,7 @@ def plot_I_vs_V_H_3d(pump):
     for index, row in pump.specs.iterrows():
         try:
             intensity = f1(row.voltage, row.tdh)
-        except (errors.VoltageError, errors.HeadError):
+        except (VoltageError, HeadError):
             intensity = 0
         intensity_check.append(intensity)
     fig = plt.figure()

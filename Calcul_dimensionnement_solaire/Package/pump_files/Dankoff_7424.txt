@@ -1,0 +1,16 @@
+PUMP NAME: Dankoff 7424
+PRICE: 99999  					# in USD
+ELECTRICAL ARCHITECTURE: permanent_magnet	
+# '.' are mandatory inputs that should be replaced by specifications or the line should be removed. 
+# 'nan' are optional input.
+# Units for columns are in the order: 
+# [V]	[m]	[A]	[L/min]	[W]	[no unit]
+voltage	tdh	current	flow	power	efficiency
+24	14.7	18.96	40	455	21.4
+24	11.3	19.58	100	470	40.1
+24	9.8	20.21	120	485	40.4
+24	4.9	20.42	160	490	26.5
+24	1	20.83	200	500	6.5
+
+
+
