@@ -71,7 +71,7 @@ if choixpot.get() == 1 :
         dem_pump = input("Quelle pompe souhaitez vous utiliser ?", "Entrez la pompe comme suit : \pompe.txt")
         pu = dem_pump.meschemin()
         #\PS150_BOOST_60.txt
-        chem_pump = 'Calcul_dimensionnement_solaire\Package\pump_files'+pu.get()
+        chem_pump = 'Package\pump_files'+pu.get()
         Motpompe = MotPompeDC(chem_pump)
         tdhpara = input('Paramètres du système de pompage pour le calcul de la HMT',None)
         tdh = tdhpara.mestdh("Hauteur entre le niveau d'eau et l'apiration de la pompe (en m):", "Hauteur entre le refoulement et le point d'utilisation (en m):","Longueur des tuyaux (en m):", "Pression résiduelle à la sortie du robinet (en bars): ")
@@ -149,7 +149,7 @@ else :
     dem_pump = input("Quelle pompe souhaitez vous utiliser ?", "Entrez la pompe comme suit : \pompe.txt")
     pu = dem_pump.meschemin()
     #\PS150_BOOST_60.txt
-    chem_pump = 'Calcul_dimensionnement_solaire\Package\pump_files'+pu.get()
+    chem_pump = 'Package\pump_files'+pu.get()
     Motpompe = MotPompeDC(chem_pump)
     tdhpara = input('Paramètres du système de pompage pour le calcul de la HMT',None)
     tdh = tdhpara.mestdh("Hauteur entre le niveau d'eau et l'apiration de la pompe (en m):", "Hauteur entre le refoulement et le point d'utilisation (en m):","Longueur des tuyaux (en m):", "Pression résiduelle à la sortie du robinet (en bars): ")
