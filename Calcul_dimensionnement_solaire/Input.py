@@ -1,4 +1,11 @@
 import tkinter as tk
+
+"""
+Module defining class and functions for creating an interactive interface
+
+@author: Delpech Théo
+
+"""
 class input(object):
     def __init__(self,Titre, demande):
         self.Titre = Titre
@@ -178,7 +185,7 @@ class input(object):
         bouton1.pack()
         window.mainloop()
         return ht0,ht1,ht2,ht3
-    def mestdh(self,demande0,demande1,demande2,demande3, demande4):
+    def mestdh(self,demande0,demande1,demande2,demande3):
             window = tk.Tk()
             window.title(self.Titre)
             window.geometry("800x400")
@@ -206,17 +213,11 @@ class input(object):
             ht3.set(ht3)
             saisieHT3 = tk.Entry(window, textvariable=ht3, width = 15)
             saisieHT3.pack()
-            ht4Label = tk.Label(window, text=demande4)
-            ht4Label.pack() 
-            ht4 = tk.DoubleVar()
-            ht4.set(ht4)
-            saisieHT4 = tk.Entry(window, textvariable=ht4, width = 15)
-            saisieHT4.pack()
             bouton1 = tk.Button(window, text="Ok", width = 10, command=window.destroy)
             bouton1.pack()
             window.mainloop()
             tdh = ht0.get() + ht1.get() + 0.1*ht2.get() + ht3.get()*10
-            return tdh, ht4
+            return tdh
     def mespf(self,demande0,demande1):
         window = tk.Tk()
         window.title(self.Titre)

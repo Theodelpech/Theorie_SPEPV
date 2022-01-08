@@ -9,6 +9,12 @@
 #       Calcul_Ka(It,Itb,Itd,Itr,theb,bo,beta)
 #       Calcul_pertes(T1c,data)
 #       normale_solaire(delt,phi,ome,beta,gam)
+"""
+Module defining class and functions for modeling solar application
+
+@author: Lamarche Louis
+
+"""
 Gsc = 1367.0
 from numpy import *
 from scipy.integrate import quad,nquad

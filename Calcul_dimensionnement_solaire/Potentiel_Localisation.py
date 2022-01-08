@@ -1,6 +1,12 @@
 import solar_mod as sm
 import numpy as np
 import time as tm
+"""
+Module defining class and functions for modeling Solar potential 
+
+@author: Delpech Théo
+
+"""
 
 Gsc = 1367.0 #W/m2 irradiation extraterrestre qui frappe la Terre
 Jour = 1 #Premier jour d'une année de 365 jours, le 1er Janvier

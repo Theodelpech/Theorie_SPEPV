@@ -1,4 +1,14 @@
-import solar_mod as sm
+# -*- coding: utf-8 -*-
+"""
+Module defining class and functions for modeling the pump.
+
+@author: Tanguy Lunel, Sergio Gualteros, Delpech Théo
+
+Some minor changes are made to fit better with the project.
+
+"""
+# flake8: noqa: F523
+
 import numpy as np
 import pandas as pd
 from itertools import count
@@ -9,20 +19,108 @@ from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 import scipy.optimize as opt
 import warnings
 import re
-from inverse import *
-from errors import *
-from function_models import *
 from Basegraph import Basegraph
+import solar_mod as sm
 
 
-class MotPompeDC(object):
+# pvpumpingsystem modules:
+from pvpumpingsystem import inverse
+from pvpumpingsystem import errors
+from pvpumpingsystem import function_models
 
-    def __init__(self, path):
+# FIXME: doc states lpm, tdh, current, because they can be used for creating
+# object with __init__(), but not available anymore then as attribute.
+# What is the proper way to document it?
+
+
+class Pump:
+    """
+    Class representing a motor-pump.
+
+    Attributes
+    ----------
+    path: str, default=''
+        The path to the .txt file with the pump specifications.
+
+    motor_electrical_architecture: str, default is None
+        'permanent_magnet', 'series_excited', 'shunt_excited',
+        'separately_excited'.
+
+    modeling_method: str, default is 'arab'
+        name of the method used for modeling the pump.
+
+    idname: str, default is None
+        name of the pump
+
+    price: numeric, default is None
+        The price of the pump
+
+    controller: str, default is None
+        Name of controller
+
+    voltage_list: None or list,
+        list of voltage (the keys of preceding dictionaries) [V]
+
+    specs: None or pandas.DataFrame,
+        Dataframe with columns of following numeric:
+            'voltage': voltage at pump input [V]
+            'current': current at pump input [A]
+            'power': electrical power at pump input [W]]
+            'tdh': total dynamic head in the pipes at output [m]
+            'flow': pump output flow rate [liter per minute]
+
+    data_completeness: None or dict,
+        Provides some figures to assess the completeness of the data.
+        (for more details, see pump.specs_completeness() )
+
+    """
+    _ids = count(1)
+
+    def __init__(self, path,  # noqa: C901
+                 motor_electrical_architecture=None,
+                 idname=None,
+                 price=np.nan,
+                 controller=None,
+                 diameter_output=None,
+                 modeling_method='arab'):
+
+        self.id = next(self._ids)
+
+        self.controller = controller
 
         # retrieve pump data from txt datasheet given by path
-        self.path = path
-        self.specs, metadata = get_data_pump(self.path)
+        self.specs, metadata = get_data_pump(path)
         self.voltage_list = self.specs.voltage.drop_duplicates()
+        # retrieve price, or overwrite it if given in __init__
+        try:
+            self.price = float(metadata['price'])
+            if not np.isnan(price):
+                self.price = price
+                warnings.warn('price attribute overwritten.')
+        except KeyError:
+            self.price = price
+        # retrieve name, or overwrite it if given in __init__
+        try:
+            self.idname = metadata['pump name']
+            if idname is not None:
+                self.idname = idname
+                warnings.warn('idname attribute overwritten.')
+        except KeyError:
+            self.idname = idname
+        # retrieve motor_architecture, or overwrite it if given in __init__
+        try:
+            self.motor_electrical_architecture = \
+                metadata['electrical architecture']
+            if motor_electrical_architecture is not None:
+                self.motor_electrical_architecture = \
+                    motor_electrical_architecture
+                warnings.warn('motor_electrical_architecture '
+                              'attribute overwritten.')
+        except KeyError:
+            self.motor_electrical_architecture = \
+                motor_electrical_architecture
+
+        # complete power and efficiency data
         if 'efficiency' not in self.specs.columns or \
                 self.specs.efficiency.isna().any():
             # Case with 1 curve Q vs TDH , but only 1 (I,V) point given
@@ -47,9 +145,101 @@ class MotPompeDC(object):
                                   index=['max', 'min'])
 
         self.data_completeness = specs_completeness(
-                self.specs)
-        self.coeffs = _curves_coeffs_Arab06(
+                self.specs,
+                self.motor_electrical_architecture)
+
+        # triggers the calculation of the pump model with decorator below
+        self.modeling_method = modeling_method
+
+    def __repr__(self):
+        text = "name: " + str(self.idname) + \
+                 "\nprice: " + str(self.price) + \
+                 "\nmodeling method: " + str(self.modeling_method)
+        return text
+
+    @property  # getter
+    def modeling_method(self):
+        return self._modeling_method
+
+    # setter: allows to recalculate attribute coeffs when changing the method
+    @modeling_method.setter
+    def modeling_method(self, model):
+        if model.lower() == 'kou':
+            self.coeffs = _curves_coeffs_Kou98(
                     self.specs, self.data_completeness)
+        elif model.lower() == 'arab':
+            self.coeffs = _curves_coeffs_Arab06(
+                    self.specs, self.data_completeness)
+        elif model.lower() == 'hamidat':
+            self.coeffs = _curves_coeffs_Hamidat08(
+                    self.specs, self.data_completeness)
+        elif model.lower() == 'theoretical':
+            self.coeffs = _curves_coeffs_theoretical(
+                    self.specs, self.data_completeness,
+                    self.motor_electrical_architecture,
+                    force_model='flexible')
+        elif model.lower() == 'theoretical_cst_efficiency':
+            self.coeffs = _curves_coeffs_theoretical(
+                    self.specs, self.data_completeness,
+                    self.motor_electrical_architecture,
+                    force_model='constant_efficiency')
+        elif model.lower() == 'theoretical_basic':
+            self.coeffs = _curves_coeffs_theoretical(
+                    self.specs, self.data_completeness,
+                    self.motor_electrical_architecture,
+                    force_model='basic')
+        elif model.lower() == 'theoretical_var_efficiency':
+            self.coeffs = _curves_coeffs_theoretical(
+                    self.specs, self.data_completeness,
+                    self.motor_electrical_architecture,
+                    force_model='variable_efficiency')
+        else:
+            raise NotImplementedError(
+                "The requested modeling method is not available. Check your "
+                "spelling, or choose between the following: {0}".format(
+                        'kou', 'arab', 'hamidat', 'theoretical'))  # noqa: F523
+        self._modeling_method = model
+
+    # TODO: work on following function
+    def starting_characteristics(self, tdh, motor_electrical_architecture):
+        """
+        To Develop:
+        In order to start, the pump usually need a higher power input
+        than the minimum power input in steady state operation.
+        One potential path for adressing this issue is in [1]
+
+        The other path is to consider the controller that goes with the pump.
+        Check 'pump_files/PCA_PCC_BLS_Controller_Data_Sheet.pdf' for more
+        details.
+
+        References
+        ----------
+        [1] Singer and Appelbaum,"Starting characteristics of direct
+        current motors powered by solar cells", IEEE transactions on
+        energy conversion, vol8, 1993
+
+        """
+        raise NotImplementedError
+    def debannee(self, It,Power,tdh,Qp):
+        Q = np.zeros(8761)
+        Qt = 0
+        for i in range(0,8761):
+            if It[i] > Power :
+                Q[i] = Qp(It[i],tdh)['Q']*60
+                Qt =Qt+ Q[i]
+            else :
+                Q[i] = 0
+        Qtotal = Qt
+        x_values = np.arange(0,8761)
+        x_valuespd = pd.DataFrame(x_values)
+        y_pd = pd.DataFrame(Q)
+        y_g = y_pd.replace(np.nan,0)
+        x= np.array(x_valuespd)
+        y_deb=np.array(y_g)
+        GRAPH_deb = Basegraph(x,y_deb/1000,"Débit en m3/heure","Heures de l'année","Débit pompé à chaques heures de l'année")
+        GRAPH_deb.show()
+        return Q, Qtotal
+
     def iv_curve_data(self, head, nbpoint=40):
         """
         Function returning the data needed for plotting the IV curve at
@@ -59,7 +249,7 @@ class MotPompeDC(object):
         ----------
         head: float
             Total dynamic head at pump output [m]
-        appoint: integer, default 40
+        nbpoint: integer, default 40
             Number of data point wanted
 
         Return
@@ -70,7 +260,7 @@ class MotPompeDC(object):
                 V: list of voltage [V]
         """
 
-        fctI, intervals = self.functIforVH_Arab()
+        fctI, intervals = self.functIforVH()
 
         Vvect = np.linspace(min(intervals['V'](head)),
                             max(intervals['V'](head)),
@@ -80,23 +270,52 @@ class MotPompeDC(object):
         for i, V in enumerate(Vvect):
             Ivect[i] = fctI(V, head)
 
-        return {'I':  Ivect, 'V': Vvect}
-    
-        
-    def functIforVH_Arab(self): 
+        return {'I': Ivect, 'V': Vvect}
+
+    def functIforVH(self):
+        """
+        Function computing the IV characteristics of the pump
+        depending on head H.
+
+        Returns
+        -------
+        tuple
+            - Function giving I according to voltage V and head H for the pump:
+                I = f1(V, H)
+            - Domains of validity for V and H. Can be functions, so as the
+                range of one depends on the other, or fixed ranges.
+        """
+
+        if self.modeling_method == 'kou':
+            return self.functIforVH_Kou()
+        if self.modeling_method == 'arab':
+            return self.functIforVH_Arab()
+        if self.modeling_method == 'theoretical':
+            return self.functIforVH_theoretical()
+        if self.modeling_method == 'hamidat':
+            raise NotImplementedError(
+                "Hamidat method does not provide model for functIforVH.")
+        else:
+            raise NotImplementedError(
+                "The function functIforVH corresponding to the requested "
+                "modeling method is not available yet, need to "
+                "implemented another valid method.")
+        # TODO: Standardize output of functionIforVH with output of QforPH?
+
+    def functIforVH_Arab(self):
         """
         Function using Hadj Arab model for modeling I vs V of pump.
 
         Check out :py:func:`_curves_coeffs_Arab06` for more details.
         """
-        
+
         coeffs = self.coeffs['coeffs_f1']
 
         if self.data_completeness['data_number'] >= 12 \
                 and self.data_completeness['voltage_number'] >= 3:
-            funct_mod = compound_polynomial_1_3
+            funct_mod = function_models.compound_polynomial_1_3
         else:
-            funct_mod = compound_polynomial_1_2
+            funct_mod = function_models.compound_polynomial_1_2
 
         # domain of V and tdh and gathering in one single variable
         dom = _domain_V_H(self.specs, self.data_completeness)
@@ -114,249 +333,474 @@ class MotPompeDC(object):
                 # check if the head is available for the pump
                 v_max = intervals['V'](0)[1]
                 if not 0 <= H <= intervals['H'](v_max)[1]:
-                    raise HeadError(
+                    raise errors.HeadError(
                             'H (={0}) is out of bounds for this pump. '
                             'H should be in the interval {1}.'
                             .format(H, intervals['H'](v_max)))
                 # check if there is enough current for given head
                 if not intervals['V'](H)[0] <= V <= intervals['V'](H)[1]:
-                    raise VoltageError(
+                    raise errors.VoltageError(
                             'V (={0}) is out of bounds. For this specific '
                             'head H (={1}), V should be in the interval {2}'
                             .format(V, H, intervals['V'](H)))
             return funct_mod([V, H], *coeffs)
 
         return functI, intervals
-        def functQforVH(self):
+
+    def functIforVH_Kou(self):
+        """
+        Function using Kou model for modeling I vs V of pump.
+
+        Check out :py:func:`_curves_coeffs_Kou98` for more details.
+        """
+
+        coeffs = self.coeffs['coeffs_f1']
+        funct_mod = function_models.polynomial_multivar_3_3_4
+
+        # domain of V and tdh and gathering in one single variable
+        dom = _domain_V_H(self.specs, self.data_completeness)
+        intervals = {'V': dom[0],
+                     'H': dom[1]}
+
+        def functI(V, H, error_raising=True):
+            """Function giving voltage V according to current I and tdh H.
+
+            Error_raising parameter allows to check the given values
+            according to the possible intervals and to raise errors if not
+            corresponding.
             """
-            Function redirecting to functQforPH. It first computes P with
-            functIforVH(), and then reinjects it into functQforPH().
+            if error_raising is True:
+                # check if the head is available for the pump
+                v_max = intervals['V'](0)[1]
+                if not 0 <= H <= intervals['H'](v_max)[1]:
+                    raise errors.HeadError(
+                            'H (={0}) is out of bounds for this pump. '
+                            'H should be in the interval {1}.'
+                            .format(H, intervals['H'](v_max)))
+                # check if there is enough current for given head
+                if not intervals['V'](H)[0] <= V <= intervals['V'](H)[1]:
+                    raise errors.VoltageError(
+                            'V (={0}) is out of bounds. For this specific '
+                            'head H (={1}), V should be in the interval {2}'
+                            .format(V, H, intervals['V'](H)))
+            return funct_mod([V, H], *coeffs)
+
+        return functI, intervals
+
+    def functIforVH_theoretical(self):
+        """
+        Function using electrical architecture for modeling V vs I of pump.
+
+        Check out :py:func:`_curves_coeffs_theoretical` for more details.
+        """
+
+        coeffs = self.coeffs['coeffs_f1']
+
+        def funct_mod(input_values, R_a, beta_0, beta_1, beta_2):
+            """Returns the equation v(i, h).
             """
+            i, h = input_values
+            funct_mod_beta = function_models.polynomial_2
+            beta = funct_mod_beta(h, beta_0, beta_1, beta_2)
+            return R_a*i + beta*np.sqrt(i)
 
-            def functQ(V, H):
-                f1, _ = self.functIforVH_Arab()
-                f2, _ = self.functQforPH_Arab()
-                try:
-                    cur = f1(V, H)
-                except (VoltageError, HeadError):
-                    cur = np.nan
-                return f2(V*cur, H)
+        # domain of V and tdh and gathering in one single variable
+        dom_VH = _domain_V_H(self.specs, self.data_completeness)
+        intervals_VH = {'V': dom_VH[0],
+                        'H': dom_VH[1]}
 
-            dom = _domain_V_H(self.specs, self.data_completeness)
-            intervals = {'V': dom[0],
-                        'H': dom[1]}
+        def functV(i, H, error_raising=True):
+            """Function giving current I according to voltage V and tdh H,
+            as theoretical model enables
+            """
+            # No need of error_raising because this function is only used
+            # for being inversed numerically after
+            if error_raising is True:
+                pass
+            return funct_mod([i, H], *coeffs)
 
-            return functQ, intervals
-            
+        def functI(V, H, error_raising=True):
+            """Inverse function of functV.
+            Note that functV must be strictly monotonic."""
+            inv_fun = inverse.inversefunc(functV,
+                                          args=(H, False))
+
+            if error_raising is True:
+                # check if the head is available for the pump
+                v_max = intervals_VH['V'](0)[1]
+                if not 0 <= H <= intervals_VH['H'](v_max)[1]:
+                    raise errors.HeadError(
+                            'H (={0}) is out of bounds for this pump. '
+                            'H should be in the interval {1}.'
+                            .format(H, intervals_VH['H'](v_max)))
+                # check if there is enough current for given head
+                if not intervals_VH['V'](H)[0] <= V <= intervals_VH['V'](H)[1]:
+                    raise errors.VoltageError(
+                            'V (={0}) is out of bounds. For this specific '
+                            'head H (={1}), V should be in the interval {2}'
+                            .format(V, H, intervals_VH['V'](H)))
+
+            return float(inv_fun(V))  # type casting to standardize with rest
+
+        return functI, intervals_VH
+
+    def functQforVH(self):
+        """
+        Function redirecting to functQforPH. It first computes P with
+        functIforVH(), and then reinjects it into functQforPH().
+        """
+
+        def functQ(V, H):
+            f1, _ = self.functIforVH()
+            f2, _ = self.functQforPH()
+            try:
+                cur = f1(V, H)
+            except (errors.VoltageError, errors.HeadError):
+                cur = np.nan
+            return f2(V*cur, H)
+
+        dom = _domain_V_H(self.specs, self.data_completeness)
+        intervals = {'V': dom[0],
+                     'H': dom[1]}
+
+        return functQ, intervals
+
+    def functQforPH(self):
+        """
+        Function computing the output flow rate of the pump.
+
+        Returns
+        -------
+        tuple
+            - the function giving Q according to power P and head H
+                for the pump: Q = f2(P, H)
+            - the domains of validity for P and H. Can be functions, so as the
+                range of one depends on the other, or fixed ranges.
+        """
+
+        if self.modeling_method == 'kou':
+            return self.functQforPH_Kou()
+        if self.modeling_method == 'arab':
+            return self.functQforPH_Arab()
+        if self.modeling_method == 'hamidat':
+            return self.functQforPH_Hamidat()
+        if self.modeling_method == 'theoretical' or 'theoretical_basic':
+            return self.functQforPH_theoretical()
+        else:
+            raise NotImplementedError(
+                "The function functQforPH corresponding to the requested "
+                "modeling method is not available yet, need to "
+                "implemented another valid method.")
+
+    def functQforPH_Hamidat(self):
+        """
+        Function using Hamidat model for output flow rate modeling.
+
+        Check out :py:func:`_curves_coeffs_Hamidat08` for more details.
+        """
+        coeffs = self.coeffs['coeffs_f2']
+
+        funct_mod_P = function_models.compound_polynomial_3_3
+
+        def funct_P(Q, power, head):
+            """Function supposed to equal 0, used for finding numerically the
+            value of flow-rate depending on power.
+            """
+            return funct_mod_P([Q, head], *coeffs) - power
+
+        dom = _domain_P_H(self.specs, self.data_completeness)
+        intervals = {'P': dom[0],
+                     'H': dom[1]}
+
+        def functQ(P, H):
+            # check if head is in available range (NOT redundant with rest)
+            if H > intervals['H'](P)[1]:
+                Q = 0
+                P_unused = P
+            # check if P is insufficient
+            if P < intervals['P'](H)[0]:
+                Q = 0
+                P_unused = P
+            # if P is in available range
+            elif intervals['P'](H)[0] <= P <= intervals['P'](H)[1]:
+                # Newton-Raphson numeraical method:
+                # actually fprime should be given for using Newton-Raphson
+                Q = opt.newton(funct_P, 5, args=(P, H))
+                P_unused = 0  # power unused for pumping
+            # if P is more than maximum
+            elif intervals['P'](H)[1] < P:
+                Pmax = intervals['P'](H)[1]
+                Q = opt.newton(funct_P, 5, args=(Pmax, H))
+                if Q < 0:  # Case where extrapolation from curve fit is bad
+                    Q = 0
+                P_unused = P - Pmax
+            # if P is NaN or other
+            else:
+                Q = np.nan
+                P_unused = np.nan
+            return {'Q': Q, 'P_unused': P_unused}
+
+        return functQ, intervals
 
     def functQforPH_Arab(self):
-            """
-            Function using Hadj Arab model for output flow rate modeling.
+        """
+        Function using Hadj Arab model for output flow rate modeling.
 
-            Check out :py:func:`_curves_coeffs_Arab06` for more details.
+        Check out :py:func:`_curves_coeffs_Arab06` for more details.
 
-            """
+        """
 
-            coeffs = self.coeffs['coeffs_f2']
-            if len(coeffs) == 12:
-                funct_mod = compound_polynomial_2_3
-            elif len(coeffs) == 9:
-                funct_mod = compound_polynomial_2_2
-            elif len(coeffs) == 8:
-                funct_mod = compound_polynomial_1_3
+        coeffs = self.coeffs['coeffs_f2']
+        if len(coeffs) == 12:
+            funct_mod = function_models.compound_polynomial_2_3
+        elif len(coeffs) == 9:
+            funct_mod = function_models.compound_polynomial_2_2
+        elif len(coeffs) == 8:
+            funct_mod = function_models.compound_polynomial_1_3
 
-            # domain of V and tdh and gathering in one single variable
-            dom = _domain_P_H(self.specs, self.data_completeness)
-            intervals = {'P': dom[0],
-                        'H': dom[1]}
+        # domain of V and tdh and gathering in one single variable
+        dom = _domain_P_H(self.specs, self.data_completeness)
+        intervals = {'P': dom[0],
+                     'H': dom[1]}
 
-            def functQ(P, H):
-                # check if head is in available range (NOT redundant with rest)
-                if H > intervals['H'](P)[1]:
+        def functQ(P, H):
+            # check if head is in available range (NOT redundant with rest)
+            if H > intervals['H'](P)[1]:
+                Q = 0
+                P_unused = P
+            # check if P is insufficient
+            elif P < intervals['P'](H)[0]:
+                Q = 0
+                P_unused = P
+            # if P is in available range
+            elif intervals['P'](H)[0] <= P <= intervals['P'](H)[1]:
+                Q = funct_mod([P, H], *coeffs)
+                P_unused = 0
+                if Q < 0:  # Case where extrapolation from curve fit is bad
                     Q = 0
-                    P_unused = P
-                # check if P is insufficient
-                elif P < intervals['P'](H)[0]:
+            # if P is more than maximum
+            elif intervals['P'](H)[1] < P:
+                Pmax = intervals['P'](H)[1]
+                Q = funct_mod([Pmax, H], *coeffs)
+                P_unused = P - Pmax
+            # if P is NaN or other
+            else:
+                Q = np.nan
+                P_unused = np.nan
+            return {'Q': Q, 'P_unused': P_unused}
+
+        return functQ, intervals
+
+    def functQforPH_Kou(self):
+        """
+        Function using Kou model for output flow rate modeling.
+
+        Check out :py:func:`_curves_coeffs_Kou98` for more details.
+        """
+
+        coeffs = self.coeffs['coeffs_f2']
+        funct_mod = function_models.polynomial_multivar_3_3_4
+
+        # domain of V and tdh and gathering in one single variable
+        dom = _domain_P_H(self.specs, self.data_completeness)
+        intervals = {'P': dom[0],
+                     'H': dom[1]}
+
+        def functQ(P, H):
+            # check if head is in available range (NOT redundant with rest)
+            if H > intervals['H'](P)[1]:
+                Q = 0
+                P_unused = P
+            # check if P is insufficient
+            if P < intervals['P'](H)[0]:
+                Q = 0
+                P_unused = P
+            # if P is in available range
+            elif intervals['P'](H)[0] <= P <= intervals['P'](H)[1]:
+                Q = funct_mod([P, H], *coeffs)
+                P_unused = 0
+            # if P is more than maximum
+            elif intervals['P'](H)[1] < P:
+                Pmax = intervals['P'](H)[1]
+                Q = funct_mod([Pmax, H], *coeffs)
+                if Q < 0:  # Case where extrapolation from curve fit is bad
                     Q = 0
-                    P_unused = P
-                # if P is in available range
-                elif intervals['P'](H)[0] <= P <= intervals['P'](H)[1]:
-                    Q = funct_mod([P, H], *coeffs)
-                    P_unused = 0
-                    if Q < 0:  # Case where extrapolation from curve fit is bad
-                        Q = 0
-                # if P is more than maximum
-                elif intervals['P'](H)[1] < P:
-                    Pmax = intervals['P'](H)[1]
-                    Q = funct_mod([Pmax, H], *coeffs)
-                    P_unused = P - Pmax
-                # if P is NaN or other
-                else:
-                    Q = np.nan
-                    P_unused = np.nan
-                return {'Q': Q, 'P_unused': P_unused}
+                P_unused = P - Pmax
+            # if P is NaN or other
+            else:
+                Q = np.nan
+                P_unused = np.nan
+            return {'Q': Q, 'P_unused': P_unused}
 
-            return functQ, intervals
-    def debannee(self, It,Power,tdh,Qp):
-        Q = np.zeros(8761)
-        Qt = 0
-        for i in range(0,8761):
-            if It[i] > Power :
-                Q[i] = Qp(It[i],tdh)['Q']*60
-                Qt =Qt+ Q[i]
-            else :
-                Q[i] = 0
-        Qtotal = Qt
-        x_values = np.arange(0,8761)
-        x_valuespd = pd.DataFrame(x_values)
-        y_pd = pd.DataFrame(Q)
-        y_g = y_pd.replace(np.nan,0)
-        x= np.array(x_valuespd)
-        y_deb=np.array(y_g)
-        GRAPH_deb = Basegraph(x,y_deb,"Débit en L/heure","Heures de l'année","Débit pompé à chaques heures de l'année")
-        GRAPH_deb.show()
-        return Q, Qtotal
-         
+        return functQ, intervals
 
-        
+    def functQforPH_theoretical(self):
+        """
+        Function using theoretical approach for output flow rate modeling.
+
+        Check out :py:func:`_curves_coeffs_theoretical` for more details.
+        """
+
+        if self.data_completeness['data_number'] >= 4 \
+                and self.data_completeness['voltage_number'] >= 2:
+            def funct_mod(input_values, a, b, c, d):
+                P, H = input_values
+                return (a + b*H) * (c + d*P)
+        else:
+            def funct_mod(input_values, mean_efficiency):
+                P, H = input_values
+                return mean_efficiency * (60000 * P) / (H * 9.81 * 1000)
+
+        coeffs = self.coeffs['coeffs_f2']
+
+        # domain of V and tdh and gathering in one single variable
+        dom = _domain_P_H(self.specs, self.data_completeness)
+        intervals = {'P': dom[0],
+                     'H': dom[1]}
+
+        def functQ(P, H):
+            # check if head is in available range (NOT redundant with rest)
+            if H > intervals['H'](P)[1]:
+                Q = 0
+                P_unused = P
+            # check if P is insufficient
+            if P < intervals['P'](H)[0]:
+                Q = 0
+                P_unused = P
+            # if P is in available range
+            elif intervals['P'](H)[0] <= P <= intervals['P'](H)[1]:
+                Q = funct_mod([P, H], *coeffs)
+                if Q < 0:  # Case where extrapolation from curve fit is bad
+                    Q = 0
+                P_unused = 0
+            # if P is more than maximum
+            elif intervals['P'](H)[1] < P:
+                Pmax = intervals['P'](H)[1]
+                Q = funct_mod([Pmax, H], *coeffs)
+                P_unused = P - Pmax
+            # if P is NaN or other
+            else:
+                Q = np.nan
+                P_unused = np.nan
+            return {'Q': Q, 'P_unused': P_unused}
+
+        return functQ, intervals
+
 
 def get_data_pump(path):
-        # open in read-only option
-        with open(path, 'r') as csvdata:
+    """
+    Loads the pump data from the .txt file designated by the path.
+    This .txt files contains the specifications of the datasheets, and must
+    follow the style of the template:
+    (~/pvpumpingsystem/data/pump_files/0_template_for_pump_specs.txt)
 
-            metadata = {}
-            header = True
-            while header is True:
-                # get metadata
-                line = csvdata.readline()
+    Parameters
+    ----------
+    path: str
+        path to the file of the pump data
 
-                # check that it is still header
-                if line.startswith('# '):
-                    header is False
-                    break
+    Returns
+    -------
+    tuple
+        A pandas.DataFrame containing the specifications (voltage, flow,
+        current, tdh, power) and a dict with the metadata of the pump.
+    """
+    # open in read-only option
+    with open(path, 'r') as csvdata:
 
-                # remove carriage return and split at ':'.
-                # .strip() removes leading or trailing whitespace
-                content = re.split(':|#', line.rstrip('\n'))
-                metadata[content[0].lower().strip()] = content[1].strip()
+        metadata = {}
+        header = True
+        while header is True:
+            # get metadata
+            line = csvdata.readline()
 
-            # Import data
-            # header=0 because firstline already read before
-            data_df = pd.read_csv(csvdata, sep='\t', header=0, comment='#')
+            # check that it is still header
+            if line.startswith('# '):
+                header is False
+                break
 
-        return data_df, metadata
+            # remove carriage return and split at ':'.
+            # .strip() removes leading or trailing whitespace
+            content = re.split(':|#', line.rstrip('\n'))
+            metadata[content[0].lower().strip()] = content[1].strip()
 
+        # Import data
+        # header=0 because firstline already read before
+        data_df = pd.read_csv(csvdata, sep='\t', header=0, comment='#')
 
-def specs_completeness(specs):
-        """
-        Evaluates the data completeness of a motor-pump.
-
-        Parameters
-        ----------
-        specs: pandas.DataFrame
-            Dataframe with specifications of motor-pump
-
-        motor_electrical_architecture: str
-            Can be 'permanent_magnet', 'series_excited', 'shunt_excited',
-            'separately_excited'.
-
-        Returns
-        -------
-        dict
-            * voltage_number: float
-                number of voltage for which data are given
-            * data_number: float
-                number of points for which lpm, current, voltage and head are
-                given
-            * head_number: float
-                number of head for which other data are given
-            * lpm_min: float
-                Ratio between min flow_rate given and maximum.
-                Should be ideally 0.
-            * head_min:float
-                Ratio between min head given and maximum.
-                Should be ideally 0.
-            * elec_archi: boolean
-                A valid electrical architecture for the motor is given
-        """
-
-        # nb voltages
-        voltages = specs.voltage.drop_duplicates()
-        volt_nb = len(voltages)
-
-        # flow data completeness (ideally goes until zero)
-        lpm_ratio = []
-        for v in voltages:
-            lpm_ratio.append(min(specs[specs.voltage == v].flow)
-                            / max(specs[specs.voltage == v].flow))
-        mean_lpm_ratio = np.mean(lpm_ratio)
-
-        # nb heads
-        heads = specs.tdh.drop_duplicates()
-        heads_nb = len(heads)
-
-        # head data completeness (minimum tdh should be 0 ideally)
-        head_ratio = min(specs.tdh)/max(specs.tdh)
-
-        data_number = 0
-        for v in voltages:
-            for i in specs[specs.voltage == v].flow:
-                data_number += 1
-
-        return {'voltage_number': volt_nb,
-                'lpm_min': mean_lpm_ratio,
-                'head_min': head_ratio,
-                'head_number': heads_nb,
-                'data_number': data_number}
+    return data_df, metadata
 
 
-    # TODO: add way to use it with only very few data point in the case of mppt
+def specs_completeness(specs,
+                       motor_electrical_architecture):
+    """
+    Evaluates the data completeness of a motor-pump.
+
+    Parameters
+    ----------
+    specs: pandas.DataFrame
+        Dataframe with specifications of motor-pump
+
+    motor_electrical_architecture: str
+        Can be 'permanent_magnet', 'series_excited', 'shunt_excited',
+        'separately_excited'.
+
+    Returns
+    -------
+    dict
+        * voltage_number: float
+            number of voltage for which data are given
+        * data_number: float
+            number of points for which lpm, current, voltage and head are
+            given
+        * head_number: float
+            number of head for which other data are given
+        * lpm_min: float
+            Ratio between min flow_rate given and maximum.
+            Should be ideally 0.
+        * head_min:float
+            Ratio between min head given and maximum.
+            Should be ideally 0.
+        * elec_archi: boolean
+            A valid electrical architecture for the motor is given
+    """
+
+    valid_elec_archi = (motor_electrical_architecture in (
+            'permanent_magnet', 'series_excited', 'shunt_excited',
+            'separately_excited'))
+
+    # nb voltages
+    voltages = specs.voltage.drop_duplicates()
+    volt_nb = len(voltages)
+
+    # flow data completeness (ideally goes until zero)
+    lpm_ratio = []
+    for v in voltages:
+        lpm_ratio.append(min(specs[specs.voltage == v].flow)
+                         / max(specs[specs.voltage == v].flow))
+    mean_lpm_ratio = np.mean(lpm_ratio)
+
+    # nb heads
+    heads = specs.tdh.drop_duplicates()
+    heads_nb = len(heads)
+
+    # head data completeness (minimum tdh should be 0 ideally)
+    head_ratio = min(specs.tdh)/max(specs.tdh)
+
+    data_number = 0
+    for v in voltages:
+        for i in specs[specs.voltage == v].flow:
+            data_number += 1
+
+    return {'voltage_number': volt_nb,
+            'lpm_min': mean_lpm_ratio,
+            'head_min': head_ratio,
+            'head_number': heads_nb,
+            'elec_archi': valid_elec_archi,
+            'data_number': data_number}
 
 
-        """
-        Adapt/complete specifications of a limite pump datasheet.
-        Used in '__init__()'
-
-        Works on the assumption that the available (I, V, Q, TDH) point is the
-        rated operating point, and that the efficiency is constant then
-        (oversimplification!). In order to mitigate this last assumption,
-        a coeff can be used to consider the mean efficiency as a ratio
-        of the rated efficiency.
-
-        Parameters
-        ----------
-        specs: pandas.DataFrame
-            Attribute specs of Pump().
-
-        efficiency_coeff: float, in range [0, 1]
-            The ratio between the mean efficiency and the rated efficiency
-            -> mean_efficiency = efficiency_coeff * rated_efficiency
-
-        Returns
-        -------
-        pandas.DataFrame
-            Attribute specs of Pump().
-        """
-        # computes all the hydraulic power through tdh and Q
-        hydrau_power = specs.flow/60000 * specs.tdh * 9810
-        # keep the data where hydraulic power is the highest, and
-        # assumes that this is the rated flowrate point
-        rated_data = specs[hydrau_power == hydrau_power.max()]
-        rated_power = rated_data.voltage * rated_data.current
-        rated_efficiency = float(hydrau_power.max()/rated_power)
-        # check consistency:
-        if not 0 < rated_efficiency < 1:
-            raise ValueError('The rated efficiency is found to be '
-                            'out of the range [0, 1].')
-        # arbitrary coeff
-        efficiency_coeff = 1
-        mean_efficiency = efficiency_coeff * rated_efficiency
-        specs['efficiency'] = mean_efficiency
-        warnings.warn('Power and current data will be recomputed '
-                    'with constant efficiency assumption.')
-        specs.power = hydrau_power / mean_efficiency
-        specs.current = specs.power / specs.voltage
-        return specs
+# TODO: add way to use it with only very few data point in the case of mppt
 def _curves_coeffs_Arab06(specs, data_completeness):
     """
     Compute curve-fitting coefficient with method of Hadj Arab [1] and
@@ -398,20 +842,20 @@ def _curves_coeffs_Arab06(specs, data_completeness):
     # Original model from [2]
     if data_completeness['data_number'] >= 12 \
             and data_completeness['voltage_number'] >= 3:
-        funct_mod_1 = compound_polynomial_1_3
-        funct_mod_2 = compound_polynomial_2_3
+        funct_mod_1 = function_models.compound_polynomial_1_3
+        funct_mod_2 = function_models.compound_polynomial_2_3
     # Original model from [1]
     elif data_completeness['data_number'] >= 9 \
             and data_completeness['voltage_number'] >= 3:
-        funct_mod_1 = compound_polynomial_1_2
-        funct_mod_2 = compound_polynomial_2_2
+        funct_mod_1 = function_models.compound_polynomial_1_2
+        funct_mod_2 = function_models.compound_polynomial_2_2
     # Other alternative for more restricted pump specifications
     elif data_completeness['data_number'] >= 8 \
             and data_completeness['voltage_number'] >= 2:
-        funct_mod_1 = compound_polynomial_1_2
-        funct_mod_2 = compound_polynomial_1_3
+        funct_mod_1 = function_models.compound_polynomial_1_2
+        funct_mod_2 = function_models.compound_polynomial_1_3
     else:
-        raise InsufficientDataError('Lack of information on lpm, '
+        raise errors.InsufficientDataError('Lack of information on lpm, '
                                            'current or tdh for pump.')
 
     # f1: I(V, H)
@@ -421,7 +865,7 @@ def _curves_coeffs_Arab06(specs, data_completeness):
 
     param_f1, covmat_f1 = opt.curve_fit(funct_mod_1, dataxy, dataz)
     # computing of statistical figures for f1
-    stats_f1 = correlation_stats(funct_mod_1, param_f1,
+    stats_f1 = function_models.correlation_stats(funct_mod_1, param_f1,
                                                  dataxy, dataz)
 
     # f2: Q(P, H)
@@ -431,7 +875,7 @@ def _curves_coeffs_Arab06(specs, data_completeness):
 
     param_f2, covmat_f2 = opt.curve_fit(funct_mod_2, dataxy, dataz)
     # computing of statistical figures for f2
-    stats_f2 = correlation_stats(funct_mod_2, param_f2,
+    stats_f2 = function_models.correlation_stats(funct_mod_2, param_f2,
                                                  dataxy, dataz)
 
     return {'coeffs_f1': param_f1,
@@ -446,7 +890,74 @@ def _curves_coeffs_Arab06(specs, data_completeness):
             'adjusted_r_squared_f2': stats_f2['adjusted_r_squared']}
 
 
+def _curves_coeffs_Kou98(specs, data_completeness):
+    """Compute curve-fitting coefficient with method of Kou [1].
 
+    It uses a 3rd order multivariate polynomial with cross terms to model
+    V(I, TDH) and Q(V, TDH) from the data.
+
+    Parameters
+    ----------
+    specs: pd.DataFrame
+        DataFrame with specs.
+
+    Returns
+    -------
+    dict
+        Coefficients resulting from linear regression under
+        keys 'coeffs_f1' and 'coeffs_f2', and statistical figures on
+        goodness of fit (keys: 'rmse_f1', 'nrmse_f1', 'r_squared_f1',
+        'adjusted_r_squared_f1', 'rmse_f2', 'nrmse_f2',
+        'r_squared_f2', 'adjusted_r_squared_f2')
+
+    References
+    ----------
+    [1] Kou Q, Klein S.A. & Beckman W.A., "A method for estimating the
+    long-term performance of direct-coupled PV pumping systems", 1998,
+    Solar Energy
+
+    """
+# TODO: change the condition data_number to head_number (better)
+    if data_completeness['voltage_number'] >= 4 \
+            and data_completeness['data_number'] >= 16:
+        funct_mod = function_models.polynomial_multivar_3_3_4
+    else:
+        raise errors.InsufficientDataError('Lack of information on lpm, '
+                                           'current or tdh for pump.')
+
+    # f1: I(V, H)
+    dataxy = [np.array(specs.voltage),
+              np.array(specs.tdh)]
+    dataz = np.array(specs.current)
+
+    param_f1, covmat_f1 = opt.curve_fit(funct_mod, dataxy, dataz)
+    # computing of statistical figures for f1
+    stats_f1 = function_models.correlation_stats(funct_mod, param_f1,
+                                                 dataxy, dataz)
+
+    # f2: Q(P, H)
+    dataxy = [np.array(specs.power),
+              np.array(specs.tdh)]
+    dataz = np.array(specs.flow)
+
+    param_f2, covmat_f2 = opt.curve_fit(funct_mod, dataxy, dataz)
+    # computing of statistical figures for f2
+    stats_f2 = function_models.correlation_stats(funct_mod, param_f2,
+                                                 dataxy, dataz)
+
+    return {'coeffs_f1': param_f1,
+            'rmse_f1': stats_f1['rmse'],
+            'nrmse_f1': stats_f1['nrmse'],
+            'r_squared_f1': stats_f1['r_squared'],
+            'adjusted_r_squared_f1': stats_f1['adjusted_r_squared'],
+            'coeffs_f2': param_f2,
+            'rmse_f2': stats_f2['rmse'],
+            'nrmse_f2': stats_f2['nrmse'],
+            'r_squared_f2': stats_f2['r_squared'],
+            'adjusted_r_squared_f2': stats_f2['adjusted_r_squared']}
+
+
+def _curves_coeffs_Hamidat08(specs, data_completeness):
     """
     Compute curve-fitting coefficient with method of Hamidat [1].
     It uses a 3rd order polynomial to model P(Q) = a + b*Q + c*Q^2 + d*Q^3
@@ -474,12 +985,12 @@ def _curves_coeffs_Arab06(specs, data_completeness):
     """
     if data_completeness['data_number'] >= 16 \
             and data_completeness['head_number'] >= 4:
-        funct_mod_2 = compound_polynomial_3_3
+        funct_mod_2 = function_models.compound_polynomial_3_3
     elif data_completeness['data_number'] >= 12 \
             and data_completeness['head_number'] >= 4:
-        funct_mod_2 = compound_polynomial_2_3
+        funct_mod_2 = function_models.compound_polynomial_2_3
     else:
-        raise InsufficientDataError('Lack of information on lpm, '
+        raise errors.InsufficientDataError('Lack of information on lpm, '
                                            'current or tdh for pump.')
 
     # f2: Q(P, H)
@@ -489,7 +1000,7 @@ def _curves_coeffs_Arab06(specs, data_completeness):
 
     param_f2, covmat_f2 = opt.curve_fit(funct_mod_2, dataxy, dataz)
     # computing of statistical figures for f2
-    stats_f2 = correlation_stats(funct_mod_2, param_f2,
+    stats_f2 = function_models.correlation_stats(funct_mod_2, param_f2,
                                                  dataxy, dataz)
 
     return {'coeffs_f2': param_f2,
@@ -564,7 +1075,7 @@ def _curves_coeffs_theoretical(specs, data_completeness, elec_archi,
             return _curves_coeffs_theoretical_basic(
                 specs, data_completeness, elec_archi)
     else:
-        raise InsufficientDataError(
+        raise errors.InsufficientDataError(
             'Pump data is too limited to apply the model forced '
             'by force_model.')
 
@@ -639,7 +1150,7 @@ def _curves_coeffs_theoretical_variable_efficiency(
         """Returns the equation v(i, h).
         """
         i, h = input_values
-        funct_mod_beta = polynomial_2
+        funct_mod_beta = function_models.polynomial_2
         beta = funct_mod_beta(h, beta_0, beta_1, beta_2)
         return R_a*i + beta*np.sqrt(i)
 
@@ -648,7 +1159,7 @@ def _curves_coeffs_theoretical_variable_efficiency(
     dataz = np.array(specs.voltage)
     param_f1, matcov = opt.curve_fit(funct_mod_1, dataxy, dataz, maxfev=10000)
     # computing of statistical figures for f1
-    stats_f1 = correlation_stats(funct_mod_1, param_f1,
+    stats_f1 = function_models.correlation_stats(funct_mod_1, param_f1,
                                                  dataxy, dataz)
 
     # f2:; Q=f2(P, H)
@@ -666,7 +1177,7 @@ def _curves_coeffs_theoretical_variable_efficiency(
     param_f2, matcov = opt.curve_fit(funct_mod_2, dataxy, dataz,
                                      maxfev=10000)
     # computing of statistical figures for f2
-    stats_f2 = correlation_stats(funct_mod_2, param_f2,
+    stats_f2 = function_models.correlation_stats(funct_mod_2, param_f2,
                                                  dataxy, dataz)
 
     return {'coeffs_f1': param_f1,
@@ -728,7 +1239,7 @@ def _curves_coeffs_theoretical_constant_efficiency(
         """Returns the equation v(i, h).
         """
         i, h = input_values
-        funct_mod_beta = polynomial_2
+        funct_mod_beta = function_models.polynomial_2
         beta = funct_mod_beta(h, beta_0, beta_1, beta_2)
         return R_a*i + beta*np.sqrt(i)
 
@@ -737,7 +1248,7 @@ def _curves_coeffs_theoretical_constant_efficiency(
     dataz = np.array(specs.voltage)
     param_f1, matcov = opt.curve_fit(funct_mod_1, dataxy, dataz, maxfev=10000)
     # computing of statistical figures for f1
-    stats_f1 = correlation_stats(funct_mod_1, param_f1,
+    stats_f1 = function_models.correlation_stats(funct_mod_1, param_f1,
                                                  dataxy, dataz)
 
     # f2: Q=f2(P, H)
@@ -816,7 +1327,7 @@ def _curves_coeffs_theoretical_basic(specs, data_completeness, elec_archi):
 
         param_f2, covmat_f2 = opt.curve_fit(funct_Q_for_PH, dataxy, dataz)
         # computing of statistical figures for f2
-        stats_f2 = correlation_stats(funct_Q_for_PH, param_f2,
+        stats_f2 = function_models.correlation_stats(funct_Q_for_PH, param_f2,
                                                      dataxy, dataz)
     else:
         # statistical figures for f2 don't make sense if not enough points
@@ -851,7 +1362,7 @@ def _domain_V_H(specs, data_completeness):
     tuple
         Two lists, the domains on voltage V [V] and on head [m]
     """
-    funct_mod = polynomial_2
+    funct_mod = function_models.polynomial_2
 
     data_v = specs.voltage.drop_duplicates()
     tdh_tips = []
@@ -910,7 +1421,7 @@ def _domain_P_H(specs, data_completeness):
         Two lists, the domains on power P [W] and on head [m]
 
     """
-    funct_mod = polynomial_1
+    funct_mod = function_models.polynomial_1
 
     if data_completeness['voltage_number'] >= 2 \
             and data_completeness['lpm_min'] == 0:
@@ -1047,7 +1558,7 @@ def plot_Q_vs_P_H_3d(pump):
     for index, row in pump.specs.iterrows():
         try:
             Q = f2(row.power, row.tdh)
-        except (PowerError, HeadError):
+        except (errors.PowerError, errors.HeadError):
             Q = 0
         lpm_check.append(Q['Q'])
     fig = plt.figure()
@@ -1085,7 +1596,7 @@ def plot_I_vs_V_H_3d(pump):
     for index, row in pump.specs.iterrows():
         try:
             intensity = f1(row.voltage, row.tdh)
-        except (VoltageError, HeadError):
+        except (errors.VoltageError, errors.HeadError):
             intensity = 0
         intensity_check.append(intensity)
     fig = plt.figure()

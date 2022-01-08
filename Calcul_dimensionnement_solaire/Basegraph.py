@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline 
 import sys 
 import numpy as np
+"""
+Module defining class and functions for creating graph
+
+@author: Delpech Théo
+
+"""
 class Basegraph(object):
     def __init__(self,x_values,y_values, Ylabel, Xlabel,Title):
         self.Y_label = Ylabel

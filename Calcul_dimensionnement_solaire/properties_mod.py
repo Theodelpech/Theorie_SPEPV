@@ -1,6 +1,11 @@
 from numpy import *
 from scipy.optimize import newton
+"""
+Module defining class and functions for modeling various properties
 
+@author: Lamarche Louis
+
+"""
 # This class provides the functionality we want. You only need to look at
 # this if you want to know how this works. It only needs to be defined
 # once, no need to muck around with its internals.

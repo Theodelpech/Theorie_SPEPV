@@ -5,6 +5,13 @@ import pandas as pd
 import matplotlib as ml
 ml.use('TkAgg')
 import matplotlib.pyplot as plt
+
+"""
+Module defining class and functions for modeling solar pannel
+
+@author: Delpech Théo
+
+"""
 class Panneau (object):
     def __init__(self, effi, Isc, Voc, Imp, Vmp, Uvoc, UIl, Cel, Aire):
         self.effi = effi
