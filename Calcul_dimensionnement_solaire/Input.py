@@ -218,7 +218,7 @@ class input(object):
             window.mainloop()
             tdh = ht0.get() + ht1.get() + 0.1*ht2.get() + ht3.get()*10
             return tdh
-    def mespf(self,demande0,demande1):
+    def mespf(self,demande0,demande1,demande2):
         window = tk.Tk()
         window.title(self.Titre)
         window.geometry("800x400")
@@ -234,8 +234,14 @@ class input(object):
         ht1.set(ht1)
         saisieHT1 = tk.Entry(window, textvariable=ht1, width = 15)
         saisieHT1.pack()
+        ht2Label = tk.Label(window, text=demande2)
+        ht2Label.pack() 
+        ht2 = tk.DoubleVar()
+        ht2.set(ht2)
+        saisieHT2 = tk.Entry(window, textvariable=ht2, width = 15)
+        saisieHT2.pack()
         bouton1 = tk.Button(window, text="Ok", width = 10, command=window.destroy)
         bouton1.pack()
         window.mainloop()
-        return ht0,ht1
+        return ht0,ht1,ht2
     
