@@ -8,7 +8,7 @@ from Panneau import Panneau
 import matplotlib.pyplot as plt
 import sys 
 from pump import Pump
-
+from reservoir import Reservoir
 """
 Module defining a main algorithm for sizing a PV punping system
 
@@ -114,7 +114,7 @@ if choixpot.get() == 1 :
                 breakpoint
             Power = float((IPF.get())*(VPF.get()))
             Qp = Qpomp(Power, tdh)
-            Qreel, Qtotal = Motpompe.debannee(Preel,Power,tdh,Qpomp)
+            Qreel, Qtotal = Motpompe.debanneeIV(Preel,Power,tdh,Qpomp)
             print("Le systeme a pompe :",Qtotal/1000,"m3 sur une annee soit :", Qtotal/(365*1000),"m3 par jours")
     
     #Modélisation couplage MPPT :
@@ -126,10 +126,8 @@ if choixpot.get() == 1 :
             Qpomp, PHpomp = Motpompe.functQforPH_Hamidat()
             mppt_dem = input('MPPT paramètre', 'Efficacité (en décimal):')
             mppt = mppt_dem.message()
-            Power_dem = input('Puissance de test du système à entrer', 'Puissance (en W) :')
-            Power = Power_dem.message()
-            Qp = Qpomp(Power.get()*mppt.get(), tdh)
-            Qreel, Qtotal = Motpompe.debannee(Preel,Power,tdh,Qpomp)
+            Power = Preel*mppt.get()
+            Qreel, Qtotal = Motpompe.debannee(Power,tdh,Qpomp)
             print("Le systeme a pompe :",Qtotal/1000,"m3 sur une annee soit :", Qtotal/(365*1000),"m3 par jours")
     
 #Calcul expérimentalement du potentiel solaire maximum de la Potentiel_Localisation :
@@ -202,22 +200,29 @@ if choixpot.get() == 1 :
                 breakpoint
             Power = float((IPF.get())*(VPF.get()))
             Qp = Qpomp(Power, tdh)
-            Qreel, Qtotal = Motpompe.debannee(Preel,Power,tdh,Qpomp)
+            Qreel, Qtotal = Motpompe.debanneeIV(Preel,Power,tdh,Qpomp)
             print("Le systeme a pompe :",Qtotal/1000,"m3 sur une annee soit :", Qtotal/(365*1000),"m3 par jours")
     
     #Modélisation couplage MPPT :
         else :
+            #Modélisation de la pompe :
             dem_pump = input("Quelle pompe souhaitez vous utiliser ?", "Entrez la pompe comme suit : \pompe.txt")
             pu = dem_pump.meschemin()
             chem_pump = 'Package\pump_files'+pu.get()
             Motpompe = Pump(chem_pump,None,None ,np.nan ,None ,None,  'hamidat')
             Qpomp, PHpomp = Motpompe.functQforPH_Hamidat()
+            #Modélisation MPPT :
             mppt_dem = input('MPPT paramètre', 'Efficacité (en décimal):')
             mppt = mppt_dem.message()
-            Power_dem = input('Puissance de test du système à entrer', 'Puissance (en W) :')
-            Power = Power_dem.message()
-            Qp = Qpomp(Power.get()*mppt.get(), tdh)
-            Qreel, Qtotal = Motpompe.debannee(Preel,Power,tdh,Qpomp)
+            #Modélisation réservoir :
+            res_dem = input('Réservoir paramètre','Volume du réservoir (m3) :')
+            volres = res_dem.message()
+            res = Reservoir(volres.get())
+            #Modélisation demande eau :
+            eaubes_dem = input('Demande en eau, paramètrage','Besoin en eau (m3) :')
+            eaubes = eaubes_dem.message()
+            Power = Preel*mppt.get()
+            Qreel, Qtotal = Motpompe.debannee(Power,tdh,Qpomp)
             print("Le systeme a pompe :",Qtotal/1000,"m3 sur une annee soit :", Qtotal/(365*1000),"m3 par jours")
         
 else :

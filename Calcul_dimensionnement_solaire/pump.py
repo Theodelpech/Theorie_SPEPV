@@ -220,7 +220,7 @@ class Pump:
 
         """
         raise NotImplementedError
-    def debannee(self, It,Power,tdh,Qp):
+    def debanneeIV(self, It,Power,tdh,Qp):
         Q = np.zeros(8761)
         Qt = 0
         for i in range(0,8761):
@@ -229,6 +229,23 @@ class Pump:
                 Qt =Qt+ Q[i]
             else :
                 Q[i] = 0
+        Qtotal = Qt
+        x_values = np.arange(0,8761)
+        x_valuespd = pd.DataFrame(x_values)
+        y_pd = pd.DataFrame(Q)
+        y_g = y_pd.replace(np.nan,0)
+        x= np.array(x_valuespd)
+        y_deb=np.array(y_g)
+        GRAPH_deb = Basegraph(x,y_deb/1000,"Débit en m3/heure","Heures de l'année","Débit pompé à chaques heures de l'année")
+        GRAPH_deb.show()
+        return Q, Qtotal
+    
+    def debannee(self, It,tdh,Qp):
+        Q = np.zeros(8761)
+        Qt = 0
+        for i in range(0,8761):
+                Q[i] = Qp(It[i],tdh)['Q']*60
+                Qt =Qt+ Q[i]
         Qtotal = Qt
         x_values = np.arange(0,8761)
         x_valuespd = pd.DataFrame(x_values)
