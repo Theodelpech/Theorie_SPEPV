@@ -66,7 +66,7 @@ class Potentiel_Localisation(object):
                 omega_2 = (omega_1)+15
                 ome_moy = (omega_1+omega_2)/2
                 delta = sm.decl_solaire(Jour)
-                thetaz_moy = sm.zenith_solaire(self.Latitude,delta,ome_moy)
+                thetaz_moy = sm.zenith_solaire(self.Latitude,delta,omega_1)
                 m_air = np.exp(-0.0001184*Alth)/(sm.cosd(thetaz_moy)+0.50572*(96.07995-thetaz_moy)**(-1.6364))
                 Io = sm.irradiation_extraterrestre_horaire(Jour, self.Latitude,omega_1,omega_2)
                 Ioh[kh] = Io
