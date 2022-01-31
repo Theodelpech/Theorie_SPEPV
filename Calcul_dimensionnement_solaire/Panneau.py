@@ -24,14 +24,14 @@ class Panneau (object):
         self.Cel = Cel
         self.Aire = Aire
     def energ_recup (self, It):
-        Itreel = It*(self.effi/100)
+        Itreel = It*(self.effi/100)*self.Aire
         x_values = np.arange(0,8761)
         x_valuespd = pd.DataFrame(x_values)
         y_pd = pd.DataFrame(Itreel)
         y_g = y_pd.replace(np.nan,0)
         x= np.array(x_valuespd)
         y_energrecup=np.array(y_g)
-        GRAPH_pottheo = Basegraph(x,y_energrecup,"Energie en W/m2","Heures de l'année","Energie récupérée par le panneau à chaque heures de l'année")
+        GRAPH_pottheo = Basegraph(x,y_energrecup,"Energie en W","Heures de l'année","Energie récupérée par le panneau à chaque heures de l'année")
         GRAPH_pottheo.show()
         return Itreel
     def courbeIV (self):

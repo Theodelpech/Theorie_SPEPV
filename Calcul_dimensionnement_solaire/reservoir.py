@@ -55,7 +55,7 @@ class Reservoir(object):
             self.water_volume = self.size
             if verbose:
                 print('Warning: The water volume exceeds size of reservoir')
-            return (self.water_volume, extra_water)
+            return (self.water_volume,0 ,extra_water)
 
         if self.water_volume < 0:
             lacking_water = self.water_volume
@@ -63,6 +63,6 @@ class Reservoir(object):
             if verbose:
                 print('Warning: The reservoir is empty, cannot ' +
                       'supply more water')
-            return (0, lacking_water)
+            return (0, lacking_water,0)
 
-        return (self.water_volume, 0)
+        return (self.water_volume, 0,0)

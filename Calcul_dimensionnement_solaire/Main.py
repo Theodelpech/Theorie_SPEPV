@@ -179,6 +179,7 @@ if choixpot.get() == 1 :
             pu = dem_pump.meschemin()
             chem_pump = 'Package\pump_files'+pu.get()
             Motpompe = Pump(chem_pump,None, None, np.nan, None, None, 'arab')
+            #\North America\CA-QC-Montreal-716270.tm2
             
             #Courbe I-V pompe :
             xpomp, ypomp = Motpompe.functIforVH_Arab()
@@ -212,18 +213,17 @@ if choixpot.get() == 1 :
             Motpompe = Pump(chem_pump,None,None ,np.nan ,None ,None,  'hamidat')
             Qpomp, PHpomp = Motpompe.functQforPH_Hamidat()
             #Modélisation MPPT :
-            mppt_dem = input('MPPT paramètre', 'Efficacité (en décimal):')
+            mppt_dem = input('MPPT paramétrage', 'Efficacité (en décimal):')
             mppt = mppt_dem.message()
             #Modélisation réservoir :
-            res_dem = input('Réservoir paramètre','Volume du réservoir (m3) :')
+            res_dem = input('Réservoir paramétrage','Volume du réservoir (m3) :')
             volres = res_dem.message()
-            res = Reservoir(volres.get())
             #Modélisation demande eau :
-            eaubes_dem = input('Demande en eau, paramètrage','Besoin en eau (m3) :')
+            eaubes_dem = input('Demande en eau, paramétrage','Besoin en eau (m3/j) :')
             eaubes = eaubes_dem.message()
             Power = Preel*mppt.get()
-            Qreel, Qtotal = Motpompe.debannee(Power,tdh,Qpomp)
-            print("Le systeme a pompe :",Qtotal/1000,"m3 sur une annee soit :", Qtotal/(365*1000),"m3 par jours")
+            Qreel, Qtotal, EWtot, LWtot = Motpompe.debannee(Power,tdh,Qpomp,eaubes.get(),volres.get())
+            print("Le systeme a pompe :",Qtotal,"m3 sur une annee soit :", Qtotal/365,"m3 par jours",EWtot,LWtot)
         
 else :
     

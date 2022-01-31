@@ -216,7 +216,7 @@ class input(object):
             bouton1 = tk.Button(window, text="Ok", width = 10, command=window.destroy)
             bouton1.pack()
             window.mainloop()
-            tdh = ht0.get() + ht1.get() + 0.1*ht2.get() + ht3.get()*10
+            tdh = ht0.get() + ht1.get() + 0.01*ht2.get() + ht3.get()*10
             return tdh
     def mespf(self,demande0,demande1,demande2):
         window = tk.Tk()
