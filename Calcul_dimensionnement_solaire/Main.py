@@ -17,15 +17,15 @@ Module defining a main algorithm for sizing a PV punping system
 """
 #Demandes de saisie, départ de l'algorithme :
 Title1 = "Saisie des informations"
-Title2 = "Vous souhaitez calculer le potentiel théoriquement ou expérimentalement par un fichier météo ?"
-Titlepan = "Paramètres du panneau"
-Titlepot = "Souhaitez vous calculer le potentiel solaire d'une localisation sans et avec un panneau PV ?"
+Title2 = "Souhaitez vous calculer le potentiel théoriquement ou expérimentalement par un fichier météo ?"
+Titlepan = "Paramétrage du panneau"
+Titlepot = "Quelle branche souhaitez vous suivre ?"
 demandeLong = "Quelle est la longitude ? (degré)"
 demandeLat = "Quelle est la latitude ? (degré)"
-demandebool = "Saisir 1 pour la méthode théorique ou 0 pour l'expérimental"
+demandebool = "Saisir 1 pour la méthode théorique ou 0 pour l'expérimental par un fichier météo"
 demandebeta = "Quel est l'angle d'inclinaison du panneau ? (degré)"
 demandealb = "Quel est l'albédo du lieu d'implantation ?"
-demandepot =  "Saisir 1 pour calculer ce potentiel ou 0 pour passer directement à la suite des calculs"
+demandepot =  "Saisir 1 pour la branche simulation ou 0 pour la branche test des composants"
 demandegam = "Quelle est l'azimuth solaire ?"
 
 #Variables de départ, modélisation de l'environnement :
@@ -57,7 +57,7 @@ if choixpot.get() == 1 :
         y_g = y_pd.replace(np.nan,0)
         x= np.array(x_valuespd)
         y_pot=np.array(y_g)
-        GRAPH_pottheo = Basegraph(x,y_pot,'Potentiel Solaire (W/m2)', "Heures de l'année","Potentiel solaire sur une année de la localisation")
+        GRAPH_pottheo = Basegraph(x,y_pot,'Potentiel Solaire (W/m2)', "Heures de l'année","Potentiel solaire sur une année pour la localisation choisie")
         GRAPH_pottheo.show()
         
         """
@@ -67,7 +67,7 @@ if choixpot.get() == 1 :
         """
         
         #Modélisation du panneau PV :
-        parampan = input('Paramètres du panneau à entrer','Quels sont les paramètres du panneau ?') 
+        parampan = input('Parametrage du panneau PV','Quels sont les paramètres du panneau ?') 
         effi, Isc, Voc, Imp, Vmp, Uvoc, UIl, Cel, Aire, Mp, Ms = parampan.messagemult('Efficacite du panneau (en %) =', 'Isc (en A) = ','Voc (en V) =','Imp (en A) =','Vmp (en V) =', 'Uvoc =','UIl =','Nombre de cellules =','Aire (en m2) =','Nombre de panneaux en parallèle :','Nombre de panneaux en série :')
         panneau_pot = Panneau(effi.get(), Isc.get(), Voc.get(),Imp.get(),Vmp.get(),Uvoc.get(),UIl.get(),Cel.get(),Aire.get())
         
@@ -78,11 +78,11 @@ if choixpot.get() == 1 :
         Ipan, Vpan, npan = panneau_pot.courbeIV()
         
         #Modélisation canalisation et HMT :
-        tdhpara = input('Paramètres du système de pompage pour le calcul de la HMT',None)
+        tdhpara = input('Parametrage du circuit hydraulique',None)
         tdh = tdhpara.mestdh("Hauteur entre le niveau d'eau et l'apiration de la pompe (en m):", "Hauteur entre le refoulement et le point d'utilisation (en m):","Longueur des tuyaux (en m):", "Pression résiduelle à la sortie du robinet (en bars): ")
         
         #Demande type de couplage :
-        couple_dem = input('Type de couplage','1 pour un couplage MPPT et 0 pour un couplage direct')
+        couple_dem = input('Parametrage du couplage','1 pour un couplage MPPT et 0 pour un couplage direct')
         couple = couple_dem.message()
         
         #Modélisation couplage direct
@@ -108,27 +108,41 @@ if choixpot.get() == 1 :
             #Débit du point de fonctionnement :
             Qpomp, PHpomp = Motpompe.functQforPH_Arab()
             pf = input("Quel est le point de fonctionnement identifié ?",None)
-            IPF, VPF, dsp = pf.mespf('If (en A) :','Vf (en V) :','Si aucun point de fonctionnement identifié, mettre 0 :')
+            IPF, VPF, dsp = pf.mespf('If (en A) :','Vf (en V) :','Si aucun point de fonctionnement identifié, mettre 0 dans toutes les cases sinon 1 dans celle-ci :')
             if dsp.get() == 0 :
                 print("Recherche d'autres composants nécessaire ou réaliser un couplage MPPT")
                 breakpoint
             Power = float((IPF.get())*(VPF.get()))
             Qp = Qpomp(Power, tdh)
-            Qreel, Qtotal = Motpompe.debanneeIV(Preel,Power,tdh,Qpomp)
-            print("Le systeme a pompe :",Qtotal/1000,"m3 sur une annee soit :", Qtotal/(365*1000),"m3 par jours")
+            #Modélisation réservoir :
+            res_dem = input('Réservoir paramétrage','Volume du réservoir (m3) :')
+            volres = res_dem.message()
+            #Modélisation demande eau :
+            eaubes_dem = input('Demande en eau, paramétrage','Besoin en eau (m3/j) :')
+            eaubes = eaubes_dem.message()
+            Qreel, Qtotal, EWtot, LWtot = Motpompe.debanneeIV(Preel, Power,tdh,Qpomp,eaubes.get(),volres.get())
+            print("Le systeme a pompe :",Qtotal,"m3 sur une annee soit :", Qtotal/365,"m3 par jours",EWtot,LWtot)
     
     #Modélisation couplage MPPT :
         else :
+            #Modélisation de la pompe :
             dem_pump = input("Quelle pompe souhaitez vous utiliser ?", "Entrez la pompe comme suit : \pompe.txt")
             pu = dem_pump.meschemin()
             chem_pump = 'Package\pump_files'+pu.get()
             Motpompe = Pump(chem_pump,None,None ,np.nan ,None ,None,  'hamidat')
             Qpomp, PHpomp = Motpompe.functQforPH_Hamidat()
-            mppt_dem = input('MPPT paramètre', 'Efficacité (en décimal):')
+            #Modélisation MPPT :
+            mppt_dem = input('MPPT paramétrage', 'Efficacité (en décimal):')
             mppt = mppt_dem.message()
+            #Modélisation réservoir :
+            res_dem = input('Réservoir paramétrage','Volume du réservoir (m3) :')
+            volres = res_dem.message()
+            #Modélisation demande eau :
+            eaubes_dem = input('Demande en eau, paramétrage','Besoin en eau (m3/j) :')
+            eaubes = eaubes_dem.message()
             Power = Preel*mppt.get()
-            Qreel, Qtotal = Motpompe.debannee(Power,tdh,Qpomp)
-            print("Le systeme a pompe :",Qtotal/1000,"m3 sur une annee soit :", Qtotal/(365*1000),"m3 par jours")
+            Qreel, Qtotal, EWtot, LWtot = Motpompe.debannee(Power,tdh,Qpomp,eaubes.get(),volres.get())
+            print("Le systeme a pompe :",Qtotal,"m3 sur une annee soit :", Qtotal/365,"m3 par jours",EWtot,LWtot)
     
 #Calcul expérimentalement du potentiel solaire maximum de la Potentiel_Localisation :
     else : 
@@ -149,11 +163,11 @@ if choixpot.get() == 1 :
         y_g = y_pd.replace(np.nan,0)
         x= np.array(x_valuespd)
         y_pot=np.array(y_g)
-        GRAPH_potmet = Basegraph(x,y_pot,'Potentiel Solaire (W/m2)', "Heures de l'année","Potentiel solaire sur une année de la localisation" )
+        GRAPH_potmet = Basegraph(x,y_pot,'Potentiel Solaire (W/m2)', "Heures de l'année","Potentiel solaire sur une année pour la localisation choisie" )
         GRAPH_potmet.show()
         
         #Modélisation du panneau PV :
-        parampan = input('Paramètres du panneau à entrer','Quels sont les paramètres du panneau ?') 
+        parampan = input('Parametrage du panneau PV','Quels sont les paramètres du panneau ?') 
         effi, Isc, Voc, Imp, Vmp, Uvoc, UIl, Cel, Aire, Mp, Ms = parampan.messagemult('Efficacite du panneau (en %) =', 'Isc (en A) = ','Voc (en V) =','Imp (en A) =','Vmp (en V) =', 'Uvoc =','UIl =','Nombre de cellules =','Aire (en m2) =','Nombre de panneaux en parallèle :','Nombre de panneaux en série :')
         panneau_pot = Panneau(effi.get(), Isc.get(), Voc.get(),Imp.get(),Vmp.get(),Uvoc.get(),UIl.get(),Cel.get(),Aire.get())
         
@@ -164,11 +178,11 @@ if choixpot.get() == 1 :
         Ipan, Vpan, npan = panneau_pot.courbeIV()
         
         #Modélisation canalisation et HMT :
-        tdhpara = input('Paramètres du système de pompage pour le calcul de la HMT',None)
+        tdhpara = input('Parametrage du circuit hydraulique',None)
         tdh = tdhpara.mestdh("Hauteur entre le niveau d'eau et l'apiration de la pompe (en m):", "Hauteur entre le refoulement et le point d'utilisation (en m):","Longueur des tuyaux (en m):", "Pression résiduelle à la sortie du robinet (en bars): ")
         
         #Demande type de couplage :
-        couple_dem = input('Type de couplage','1 pour un couplage MPPT et 0 pour un couplage direct')
+        couple_dem = input('Parametrage du couplage','1 pour un couplage MPPT et 0 pour un couplage direct')
         couple = couple_dem.message()
         
         #Modélisation couplage direct
@@ -195,14 +209,21 @@ if choixpot.get() == 1 :
             #Débit du point de fonctionnement :
             Qpomp, PHpomp = Motpompe.functQforPH_Arab()
             pf = input("Quel est le point de fonctionnement identifié ?",None)
-            IPF, VPF,dsp = pf.mespf('If (en A) :','Vf (en V) :','Si aucun point de fonctionnement identifié, mettre 0 :')
+            IPF, VPF,dsp = pf.mespf('If (en A) :','Vf (en V) :','Si aucun point de fonctionnement identifié, mettre 0 dans toutes les cases sinon 1 dans celle-ci :')
             if dsp.get() == 0 :
                 print("Recherche d'autres composants nécessaire ou réaliser un couplage MPPT")
                 breakpoint
             Power = float((IPF.get())*(VPF.get()))
             Qp = Qpomp(Power, tdh)
-            Qreel, Qtotal = Motpompe.debanneeIV(Preel,Power,tdh,Qpomp)
-            print("Le systeme a pompe :",Qtotal/1000,"m3 sur une annee soit :", Qtotal/(365*1000),"m3 par jours")
+            #Modélisation réservoir :
+            res_dem = input('Réservoir paramétrage','Volume du réservoir (m3) :')
+            volres = res_dem.message()
+            #Modélisation demande eau :
+            eaubes_dem = input('Demande en eau, paramétrage','Besoin en eau (m3/j) :')
+            eaubes = eaubes_dem.message()
+            Qreel, Qtotal, EWtot, LWtot = Motpompe.debanneeIV(Preel, Power,tdh,Qpomp,eaubes.get(),volres.get())
+            print("Le systeme a pompe :",Qtotal,"m3 sur une annee soit :", Qtotal/365,"m3 par jours",EWtot,LWtot)
+        
     
     #Modélisation couplage MPPT :
         else :
@@ -228,7 +249,7 @@ if choixpot.get() == 1 :
 else :
     
     #Modélisation Panneau PV
-    parampan = input('Paramètres du panneau à entrer','Quels sont les paramètres du panneau ?')
+    parampan = input('Parametrage du panneau PV','Quels sont les paramètres du panneau ?')
     effi, Isc, Voc, Imp, Vmp, Uvoc, UIl, Cel, Aire, Mp, Ms = parampan.messagemult('Efficacite du panneau (en %) =', 'Isc (en A) = ','Voc (en V) =','Imp (en A) =','Vmp (en V) =', 'Uvoc =','UIl =','Nombre de cellules =','Aire (en m2) =','Nombre de panneaux en parallèle :','Nombre de panneaux en série :')
     panneau_test = Panneau(effi.get(), Isc.get(), Voc.get(),Imp.get(),Vmp.get(),Uvoc.get(),UIl.get(),Cel.get(), Aire.get())
     
@@ -236,11 +257,11 @@ else :
     Ipan, Vpan, npan = panneau_test.courbeIV()
     
     #Modélisation moteur-pompe DC :
-    tdhpara = input('Paramètres du système de pompage pour le calcul de la HMT',None)
+    tdhpara = input('Parametrage du circuit hydraulique',None)
     tdh = tdhpara.mestdh("Hauteur entre le niveau d'eau et l'apiration de la pompe (en m):", "Hauteur entre le refoulement et le point d'utilisation (en m):","Longueur des tuyaux (en m):", "Pression résiduelle à la sortie du robinet (en bars): ")
     
     #Demande type de couplage :
-    couple_dem = input('Type de couplage','1 pour un couplage MPPT et 0 pour un couplage direct')
+    couple_dem = input('Parametrage du couplage','1 pour un couplage MPPT et 0 pour un couplage direct')
     couple = couple_dem.message()
     
     #Modélisation couplage direct
@@ -266,14 +287,14 @@ else :
         #Débit du point de fonctionnement :
         Qpomp, PHpomp = Motpompe.functQforPH_Arab()
         pf = input("Quel est le point de fonctionnement identifié ?",None)
-        IPF, VPF, dsp = pf.mespf('If (en A) :','Vf (en V) :','Si aucun point de fonctionnement identifié, mettre 0 :')
+        IPF, VPF, dsp = pf.mespf('If (en A) :','Vf (en V) :','Si aucun point de fonctionnement identifié, mettre 0 dans toutes les cases sinon 1 dans celle-ci:')
         if dsp.get() == 0 :
             print("Recherche d'autres composants nécessaire ou réaliser un couplage MPPT")
             breakpoint
         Power = float((IPF.get())*(VPF.get()))
         Qp = Qpomp(Power, tdh)
-        print("Pour ce point de fonctionnement le debit est de :",Qp['Q']*(60/1000),"m3/h")
-        print("La puissance non utilisee est de :",Qp['P_unused'],"W")
+        print("Pour ce point de fonctionnement le débit est de :",Qp['Q']*(60/1000),"m3/h")
+        print("La puissance non utilisée est de :",Qp['P_unused'],"W")
     
     #Modélisation couplage MPPT :
     else :
@@ -284,12 +305,12 @@ else :
         chem_pump = 'Package\pump_files'+pu.get()
         Motpompe = Pump(chem_pump,None,None ,np.nan ,None ,None,  'hamidat')
         Qpomp, PHpomp = Motpompe.functQforPH_Hamidat()
-        mppt_dem = input('MPPT paramètre', 'Efficacité (en décimal):')
+        mppt_dem = input('Parametrage du MPPT', 'Efficacité (en décimal):')
         mppt = mppt_dem.message()
         Power_dem = input('Puissance de test du système à entrer', 'Puissance (en W) :')
         Power = Power_dem.message()
         Qp = Qpomp(Power.get()*mppt.get(), tdh)
-        print("Pour cette puissance essayée le debit est de :",Qp['Q']*(60/1000),"m3/h")
+        print("Pour cette puissance essayée le débit est de :",Qp['Q']*(60/1000),"m3/h")
         print("La puissance non utilisée est de :",Qp['P_unused'],"W")
         
         

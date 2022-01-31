@@ -60,23 +60,18 @@ class Potentiel_Localisation(object):
         Rbh = np.zeros(8761)
         Ioh = np.zeros(8761)
         Ithh = np.zeros(8761)
-        thetaz_moyh = np.zeros(8761)
-        for Jour in range(0,365):
+        for Jour in range(1,366):
             for Temps_solaire in range (0,24):
                 omega_1 = (Temps_solaire-12)*15
                 omega_2 = (omega_1)+15
                 ome_moy = (omega_1+omega_2)/2
                 delta = sm.decl_solaire(Jour)
-                #Gon = self.Gsc*(1+0.033((360*self.Jour)/365)) 
-                thetaz_moy = sm.zenith_solaire(self.Latitude,delta,omega_1)
-                thetaz_moyh[kh] = thetaz_moy
-                alphas_moy = 90 - thetaz_moy
-                m_air = 1/(sm.cosd(thetaz_moy)+0.50572*(96.07995-thetaz_moy)**(-1.6364))
-                #m_air = 2
+                thetaz_moy = sm.zenith_solaire(self.Latitude,delta,ome_moy)
+                m_air = np.exp(-0.0001184*Alth)/(sm.cosd(thetaz_moy)+0.50572*(96.07995-thetaz_moy)**(-1.6364))
                 Io = sm.irradiation_extraterrestre_horaire(Jour, self.Latitude,omega_1,omega_2)
                 Ioh[kh] = Io
                 tau_b = ao + aun*np.exp(-k*m_air)
-                Ibh = Io*tau_b
+                Ibh = max(0,Io*tau_b*sm.cosd(thetaz_moy))
                 tau_d = 0.271 - 0.294*tau_b
                 Idh = Io*tau_d
                 Ith = Idh + Ibh
@@ -88,8 +83,4 @@ class Potentiel_Localisation(object):
                 kh = kh+1 
                 Temps_solaire = Temps_solaire +1
         return It_global
-        # End of user code	
-    # Start of user code -> methods for Potentiel_Localisation class
-        
-    # End of user code
 

@@ -221,25 +221,56 @@ class Pump:
 
         """
         raise NotImplementedError
-    def debanneeIV(self, It,Power,tdh,Qp):
+    def debanneeIV(self, It,Power,tdh,Qp,eaubes,volres):
         Q = np.zeros(8761)
+        res = Reservoir(volres)
+        wvh = np.zeros(8761)
+        lwh = np.zeros(8761)
+        ewh = np.zeros(8761)
         Qt = 0
+        ewht = 0
+        lwht = 0
+        Qdem = eaubes/24
         for i in range(0,8761):
             if It[i] > Power :
-                Q[i] = Qp(It[i],tdh)['Q']*60
+                Q[i] = Qp(It[i],tdh)['Q']*(60/1000)
+                wvh[i],lwh[i],ewh[i] = res.change_water_volume(Q[i]-Qdem)
+                ewht= ewht + ewh[i] 
+                lwht = lwht + lwh[i] 
                 Qt =Qt+ Q[i]
             else :
                 Q[i] = 0
-        Qtotal = Qt
+                wvh[i],lwh[i],ewh[i] = res.change_water_volume(Q[i]-Qdem)
+                ewht= ewht + ewh[i] 
+                lwht = lwht + lwh[i] 
+                Qt =Qt+ Q[i]
+        Qtotal = Qt - ewht
+        EWT = ewht
+        LWT = lwht  
         x_values = np.arange(0,8761)
         x_valuespd = pd.DataFrame(x_values)
         y_pd = pd.DataFrame(Q)
         y_g = y_pd.replace(np.nan,0)
         x= np.array(x_valuespd)
         y_deb=np.array(y_g)
-        GRAPH_deb = Basegraph(x,y_deb/1000,"Débit en m3/heure","Heures de l'année","Débit pompé à chaques heures de l'année")
+        GRAPH_deb = Basegraph(x,y_deb,"Débit en m3/h","Heures de l'année","Débit à chaques heures de l'année")
         GRAPH_deb.show()
-        return Q, Qtotal
+        y_pd2 = pd.DataFrame(ewh)
+        y_g2 = y_pd2.replace(np.nan,0)
+        y_ewh=np.array(y_g2)
+        GRAPH_ewh = Basegraph(x,y_ewh,"Eau non pompée en m3","Heures de l'année","Eau non pompée à chaques heures de l'année")
+        GRAPH_ewh.show()
+        y_pd3 = pd.DataFrame(lwh)
+        y_g3 = y_pd3.replace(np.nan,0)
+        y_lwh=np.array(y_g3)
+        GRAPH_lwh = Basegraph(x,y_lwh,"Eau manquante m3","Heures de l'année","Eau manquante à chaques heures de l'année")
+        GRAPH_lwh.show()
+        y_pd4 = pd.DataFrame(wvh)
+        y_g4 = y_pd4.replace(np.nan,0)
+        y_wvh=np.array(y_g4)
+        GRAPH_wvh = Basegraph(x,y_wvh,"Niveau du réservoir","Heures de l'année","Niveau du réservoir à chaques heures de l'année")
+        GRAPH_wvh.show()
+        return Q, Qtotal, EWT,LWT    
     
     def debannee(self, It,tdh,Qp,eaubes,volres):
         Q = np.zeros(8761)
@@ -266,17 +297,17 @@ class Pump:
         y_g = y_pd.replace(np.nan,0)
         x= np.array(x_valuespd)
         y_deb=np.array(y_g)
-        GRAPH_deb = Basegraph(x,y_deb,"Débit en m3/heure","Heures de l'année","Débit pompé à chaques heures de l'année")
+        GRAPH_deb = Basegraph(x,y_deb,"Débit en m3/h","Heures de l'année","Débit à chaques heures de l'année")
         GRAPH_deb.show()
         y_pd2 = pd.DataFrame(ewh)
         y_g2 = y_pd2.replace(np.nan,0)
         y_ewh=np.array(y_g2)
-        GRAPH_ewh = Basegraph(x,y_ewh,"Eau non pompée","Heures de l'année","Eau non pompée à chaques heures de l'année")
+        GRAPH_ewh = Basegraph(x,y_ewh,"Eau non pompée en m3","Heures de l'année","Eau non pompée à chaques heures de l'année")
         GRAPH_ewh.show()
         y_pd3 = pd.DataFrame(lwh)
         y_g3 = y_pd3.replace(np.nan,0)
         y_lwh=np.array(y_g3)
-        GRAPH_lwh = Basegraph(x,y_lwh,"Eau manquante","Heures de l'année","Eau manquante à chaques heures de l'année")
+        GRAPH_lwh = Basegraph(x,y_lwh,"Eau manquante m3","Heures de l'année","Eau manquante à chaques heures de l'année")
         GRAPH_lwh.show()
         y_pd4 = pd.DataFrame(wvh)
         y_g4 = y_pd4.replace(np.nan,0)
